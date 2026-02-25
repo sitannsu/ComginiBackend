@@ -26,14 +26,17 @@ echo "🐬 Step 2: Installing MySQL..."
 if command -v mysql &> /dev/null; then
     echo "✅ MySQL is already installed"
 else
-    # Install MySQL 8.0 community server
+    # Step A: Install MySQL 8.0 repo (for Amazon Linux 2023 / AL2 / RHEL)
     sudo yum install -y https://dev.mysql.com/get/mysql80-community-release-el9-1.noarch.rpm 2>/dev/null || \
-    sudo yum install -y https://dev.mysql.com/get/mysql80-community-release-el7-11.noarch.rpm 2>/dev/null || \
-    sudo amazon-linux-extras install mysql8.0 -y 2>/dev/null || \
+    sudo yum install -y https://dev.mysql.com/get/mysql80-community-release-el7-11.noarch.rpm 2>/dev/null || true
+
+    # Step B: Install the actual MySQL server package
     sudo dnf install -y mysql-community-server 2>/dev/null || \
     sudo yum install -y mysql-community-server 2>/dev/null || \
+    sudo amazon-linux-extras install mysql8.0 -y 2>/dev/null || \
     sudo yum install -y mariadb105-server 2>/dev/null || \
     sudo yum install -y mariadb-server 2>/dev/null
+
     echo "✅ MySQL/MariaDB installed"
 fi
 
