@@ -11,13 +11,19 @@ async function runMigrations() {
         const schemaPath = path.join(__dirname, 'schema.sql');
         const schema = fs.readFileSync(schemaPath, 'utf8');
 
-        // Split SQL file into individual statements and execute each one
-        const statements = schema
+        // Remove comment lines, then split into individual statements
+        const cleanedSchema = schema
+            .split('\n')
+            .filter(line => !line.trim().startsWith('--'))
+            .join('\n');
+
+        const statements = cleanedSchema
             .split(';')
             .map(s => s.trim())
-            .filter(s => s.length > 0 && !s.startsWith('--'));
+            .filter(s => s.length > 0);
 
         for (const statement of statements) {
+            console.log('  Executing:', statement.substring(0, 60) + '...');
             await connection.query(statement);
         }
 
