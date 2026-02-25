@@ -5,6 +5,21 @@ const morgan = require('morgan');
 require('dotenv').config();
 
 const authRoutes = require('./routes/authRoutes');
+const dashboardRoutes = require('./routes/dashboardRoutes');
+const clientRoutes = require('./routes/clientRoutes');
+const mastersRoutes = require('./routes/mastersRoutes');
+const incorporationRoutes = require('./routes/incorporationRoutes');
+const taskRoutes = require('./routes/taskRoutes');
+const eventRoutes = require('./routes/eventRoutes');
+const documentRoutes = require('./routes/documentRoutes');
+const reportRoutes = require('./routes/reportRoutes');
+const hrmsRoutes = require('./routes/hrmsRoutes');
+const businessRoutes = require('./routes/businessRoutes');
+const financeRoutes = require('./routes/financeRoutes');
+const supportRoutes = require('./routes/supportRoutes');
+const secretarialRoutes = require('./routes/secretarialRoutes');
+const mcaRoutes = require('./routes/mcaRoutes');
+const efilingRoutes = require('./routes/efilingRoutes');
 const { generalLimiter } = require('./middleware/rateLimiter');
 
 const app = express();
@@ -42,7 +57,23 @@ app.get('/health', (req, res) => {
 });
 
 // API routes
-app.use(`/api/${process.env.API_VERSION || 'v1'}/auth`, authRoutes);
+const v1 = `/api/${process.env.API_VERSION || 'v1'}`;
+app.use(`${v1}/auth`, authRoutes);
+app.use(`${v1}/dashboard`, dashboardRoutes);
+app.use(`${v1}/clients`, clientRoutes);
+app.use(`${v1}/masters`, mastersRoutes);
+app.use(`${v1}/incorporations`, incorporationRoutes);
+app.use(`${v1}/tasks`, taskRoutes);
+app.use(`${v1}/events`, eventRoutes);
+app.use(`${v1}/documents`, documentRoutes);
+app.use(`${v1}/reports`, reportRoutes);
+app.use(`${v1}/hrms`, hrmsRoutes);
+app.use(`${v1}/business`, businessRoutes);
+app.use(`${v1}/finance`, financeRoutes);
+app.use(`${v1}/support`, supportRoutes);
+app.use(`${v1}/secretarial`, secretarialRoutes);
+app.use(`${v1}/mca`, mcaRoutes);
+app.use(`${v1}/efiling`, efilingRoutes);
 
 // 404 handler
 app.use((req, res) => {
