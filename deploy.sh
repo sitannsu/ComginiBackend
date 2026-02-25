@@ -22,20 +22,20 @@ sudo yum update -y
 echo ""
 echo "🐬 Step 2: Installing MySQL..."
 
-# Check if MySQL is already installed
-if command -v mysql &> /dev/null; then
-    echo "✅ MySQL is already installed"
+# Check if MySQL server is already installed
+if command -v mysqld &> /dev/null || systemctl list-unit-files | grep -q mysqld; then
+    echo "✅ MySQL server is already installed"
 else
-    # Step A: Install MySQL 8.0 repo (for Amazon Linux 2023 / AL2 / RHEL)
-    sudo yum install -y https://dev.mysql.com/get/mysql80-community-release-el9-1.noarch.rpm 2>/dev/null || \
-    sudo yum install -y https://dev.mysql.com/get/mysql80-community-release-el7-11.noarch.rpm 2>/dev/null || true
+    # Step A: Install MySQL 8.0 repo (for Amazon Linux 2023 / RHEL 9)
+    sudo yum install -y https://dev.mysql.com/get/mysql80-community-release-el9-1.noarch.rpm 2>/dev/null || true
 
     # Step B: Install the actual MySQL server package
-    sudo dnf install -y mysql-community-server 2>/dev/null || \
-    sudo yum install -y mysql-community-server 2>/dev/null || \
-    sudo amazon-linux-extras install mysql8.0 -y 2>/dev/null || \
-    sudo yum install -y mariadb105-server 2>/dev/null || \
-    sudo yum install -y mariadb-server 2>/dev/null
+    echo "Installing MySQL Community Server..."
+    sudo dnf install -y mysql-community-server || \
+    sudo yum install -y mysql-community-server || \
+    { echo "❌ Failed to install MySQL. Trying MariaDB as fallback..."; \
+      sudo yum install -y mariadb105-server 2>/dev/null || \
+      sudo yum install -y mariadb-server; }
 
     echo "✅ MySQL/MariaDB installed"
 fi
