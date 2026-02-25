@@ -1,0 +1,1102 @@
+{
+	"info": {
+		"_postman_id": "comgini-full-api-v1",
+		"name": "Comgini Full API v1",
+		"description": "Complete API collection for Comgini Backend - All 16 modules",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{ "key": "baseUrl", "value": "http://13.126.81.144:3000/api/v1" },
+		{ "key": "token", "value": "" },
+		{ "key": "clientId", "value": "" },
+		{ "key": "companyId", "value": "" },
+		{ "key": "taskId", "value": "" },
+		{ "key": "eventId", "value": "" },
+		{ "key": "invoiceId", "value": "" },
+		{ "key": "employeeId", "value": "" }
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }]
+	},
+	"item": [
+		{
+			"name": "1. Auth & Security",
+			"item": [
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"if (jsonData.data && jsonData.data.token) {",
+									"    pm.collectionVariables.set('token', jsonData.data.token);",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"test@example.com\",\n    \"password\": \"Test123!@#\"\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+					}
+				},
+				{
+					"name": "Get Profile",
+					"request": {
+						"method": "GET",
+						"url": { "raw": "{{baseUrl}}/auth/profile", "host": ["{{baseUrl}}"], "path": ["auth", "profile"] }
+					}
+				},
+				{
+					"name": "Forgot Password",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"test@example.com\"\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/auth/forgot-password", "host": ["{{baseUrl}}"], "path": ["auth", "forgot-password"] }
+					}
+				},
+				{
+					"name": "Reset Password",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"token\": \"reset-token-here\",\n    \"newPassword\": \"NewPass123!@#\"\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/auth/reset-password", "host": ["{{baseUrl}}"], "path": ["auth", "reset-password"] }
+					}
+				},
+				{
+					"name": "Logout",
+					"request": {
+						"method": "POST",
+						"url": { "raw": "{{baseUrl}}/auth/logout", "host": ["{{baseUrl}}"], "path": ["auth", "logout"] }
+					}
+				}
+			]
+		},
+		{
+			"name": "2. Dashboard",
+			"item": [
+				{
+					"name": "Get Dashboard Summary",
+					"request": {
+						"method": "GET",
+						"url": { "raw": "{{baseUrl}}/dashboard/summary", "host": ["{{baseUrl}}"], "path": ["dashboard", "summary"] }
+					}
+				},
+				{
+					"name": "Get Widgets",
+					"request": {
+						"method": "GET",
+						"url": { "raw": "{{baseUrl}}/dashboard/widgets", "host": ["{{baseUrl}}"], "path": ["dashboard", "widgets"] }
+					}
+				},
+				{
+					"name": "Update Widgets",
+					"request": {
+						"method": "PUT",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"widgets\": [\n        { \"widget_type\": \"tasks\", \"position\": 0, \"is_visible\": true },\n        { \"widget_type\": \"calendar\", \"position\": 1, \"is_visible\": true },\n        { \"widget_type\": \"attendance\", \"position\": 2, \"is_visible\": true }\n    ]\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/dashboard/widgets", "host": ["{{baseUrl}}"], "path": ["dashboard", "widgets"] }
+					}
+				},
+				{
+					"name": "Get Notes",
+					"request": {
+						"method": "GET",
+						"url": { "raw": "{{baseUrl}}/dashboard/notes", "host": ["{{baseUrl}}"], "path": ["dashboard", "notes"] }
+					}
+				},
+				{
+					"name": "Create Note",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"My Note\",\n    \"content\": \"Remember to check compliance deadlines\",\n    \"color\": \"#FFE4B5\"\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/dashboard/notes", "host": ["{{baseUrl}}"], "path": ["dashboard", "notes"] }
+					}
+				},
+				{
+					"name": "Update Note",
+					"request": {
+						"method": "PUT",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Updated Note\",\n    \"content\": \"Updated content\",\n    \"color\": \"#98FB98\",\n    \"is_pinned\": true\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/dashboard/notes/1", "host": ["{{baseUrl}}"], "path": ["dashboard", "notes", "1"] }
+					}
+				},
+				{
+					"name": "Delete Note",
+					"request": {
+						"method": "DELETE",
+						"url": { "raw": "{{baseUrl}}/dashboard/notes/1", "host": ["{{baseUrl}}"], "path": ["dashboard", "notes", "1"] }
+					}
+				},
+				{
+					"name": "Get Social Feed",
+					"request": {
+						"method": "GET",
+						"url": { "raw": "{{baseUrl}}/dashboard/feed?page=1&limit=20", "host": ["{{baseUrl}}"], "path": ["dashboard", "feed"], "query": [{ "key": "page", "value": "1" }, { "key": "limit", "value": "20" }] }
+					}
+				},
+				{
+					"name": "Create Post",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"content\": \"Team announcement: New compliance deadline for FY 2025-26\"\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/dashboard/feed", "host": ["{{baseUrl}}"], "path": ["dashboard", "feed"] }
+					}
+				},
+				{
+					"name": "Delete Post",
+					"request": {
+						"method": "DELETE",
+						"url": { "raw": "{{baseUrl}}/dashboard/feed/1", "host": ["{{baseUrl}}"], "path": ["dashboard", "feed", "1"] }
+					}
+				}
+			]
+		},
+		{
+			"name": "3. Clients",
+			"item": [
+				{
+					"name": "Get All Clients",
+					"request": {
+						"method": "GET",
+						"url": { "raw": "{{baseUrl}}/clients?page=1&limit=20", "host": ["{{baseUrl}}"], "path": ["clients"], "query": [{ "key": "page", "value": "1" }, { "key": "limit", "value": "20" }] }
+					}
+				},
+				{
+					"name": "Search Clients",
+					"request": {
+						"method": "GET",
+						"url": { "raw": "{{baseUrl}}/clients?search=Reliance&status=active", "host": ["{{baseUrl}}"], "path": ["clients"], "query": [{ "key": "search", "value": "Reliance" }, { "key": "status", "value": "active" }] }
+					}
+				},
+				{
+					"name": "Get Client by ID",
+					"request": {
+						"method": "GET",
+						"url": { "raw": "{{baseUrl}}/clients/{{clientId}}", "host": ["{{baseUrl}}"], "path": ["clients", "{{clientId}}"] }
+					}
+				},
+				{
+					"name": "Create Client",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"if (jsonData.data && jsonData.data.id) {",
+									"    pm.collectionVariables.set('clientId', jsonData.data.id);",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Acme Corp\",\n    \"email\": \"contact@acme.com\",\n    \"phone\": \"9876543210\",\n    \"company_name\": \"Acme Corporation Pvt Ltd\",\n    \"cin\": \"U12345MH2020PTC123456\",\n    \"pan\": \"AAACA1234A\",\n    \"gstin\": \"27AAACA1234A1Z5\",\n    \"address\": \"123 Business Park, Mumbai\",\n    \"city\": \"Mumbai\",\n    \"state\": \"Maharashtra\",\n    \"pincode\": \"400001\",\n    \"client_group\": \"Corporate\",\n    \"risk_score\": \"low\"\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/clients", "host": ["{{baseUrl}}"], "path": ["clients"] }
+					}
+				},
+				{
+					"name": "Update Client",
+					"request": {
+						"method": "PUT",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Acme Corp Updated\",\n    \"email\": \"new@acme.com\",\n    \"phone\": \"9876543210\",\n    \"company_name\": \"Acme Corporation Pvt Ltd\",\n    \"cin\": \"U12345MH2020PTC123456\",\n    \"pan\": \"AAACA1234A\",\n    \"gstin\": \"27AAACA1234A1Z5\",\n    \"address\": \"456 New Business Park\",\n    \"city\": \"Mumbai\",\n    \"state\": \"Maharashtra\",\n    \"pincode\": \"400002\",\n    \"client_group\": \"Corporate\",\n    \"risk_score\": \"medium\",\n    \"status\": \"active\"\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/clients/{{clientId}}", "host": ["{{baseUrl}}"], "path": ["clients", "{{clientId}}"] }
+					}
+				},
+				{
+					"name": "Delete Client",
+					"request": {
+						"method": "DELETE",
+						"url": { "raw": "{{baseUrl}}/clients/{{clientId}}", "host": ["{{baseUrl}}"], "path": ["clients", "{{clientId}}"] }
+					}
+				},
+				{
+					"name": "Add Client Contact",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"John Doe\",\n    \"designation\": \"CFO\",\n    \"email\": \"john@acme.com\",\n    \"phone\": \"9876543211\",\n    \"is_primary\": true\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/clients/{{clientId}}/contacts", "host": ["{{baseUrl}}"], "path": ["clients", "{{clientId}}", "contacts"] }
+					}
+				},
+				{
+					"name": "Delete Client Contact",
+					"request": {
+						"method": "DELETE",
+						"url": { "raw": "{{baseUrl}}/clients/{{clientId}}/contacts/1", "host": ["{{baseUrl}}"], "path": ["clients", "{{clientId}}", "contacts", "1"] }
+					}
+				}
+			]
+		},
+		{
+			"name": "4. Masters",
+			"item": [
+				{
+					"name": "Get Companies",
+					"request": {
+						"method": "GET",
+						"url": { "raw": "{{baseUrl}}/masters/companies?page=1&limit=20", "host": ["{{baseUrl}}"], "path": ["masters", "companies"], "query": [{ "key": "page", "value": "1" }, { "key": "limit", "value": "20" }] }
+					}
+				},
+				{
+					"name": "Get Company by ID",
+					"request": {
+						"method": "GET",
+						"url": { "raw": "{{baseUrl}}/masters/companies/{{companyId}}", "host": ["{{baseUrl}}"], "path": ["masters", "companies", "{{companyId}}"] }
+					}
+				},
+				{
+					"name": "Create Company",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"if (jsonData.data && jsonData.data.id) {",
+									"    pm.collectionVariables.set('companyId', jsonData.data.id);",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Reliance Industries Ltd\",\n    \"cin\": \"L17110MH1973PLC019786\",\n    \"company_type\": \"company\",\n    \"status\": \"Active\",\n    \"roc\": \"ROC-Mumbai\",\n    \"registration_date\": \"1973-05-08\",\n    \"email\": \"compliance@ril.com\",\n    \"address\": \"3rd Floor, Maker Chambers IV, Nariman Point, Mumbai\",\n    \"authorized_capital\": 1500000000,\n    \"paid_up_capital\": 678000000\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/masters/companies", "host": ["{{baseUrl}}"], "path": ["masters", "companies"] }
+					}
+				},
+				{
+					"name": "Update Company",
+					"request": {
+						"method": "PUT",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Reliance Industries Limited\",\n    \"cin\": \"L17110MH1973PLC019786\",\n    \"company_type\": \"company\",\n    \"status\": \"Active\",\n    \"roc\": \"ROC-Mumbai\",\n    \"registration_date\": \"1973-05-08\",\n    \"email\": \"compliance@ril.com\",\n    \"address\": \"Updated Address\",\n    \"authorized_capital\": 1500000000,\n    \"paid_up_capital\": 678000000\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/masters/companies/{{companyId}}", "host": ["{{baseUrl}}"], "path": ["masters", "companies", "{{companyId}}"] }
+					}
+				},
+				{
+					"name": "Delete Company",
+					"request": {
+						"method": "DELETE",
+						"url": { "raw": "{{baseUrl}}/masters/companies/{{companyId}}", "host": ["{{baseUrl}}"], "path": ["masters", "companies", "{{companyId}}"] }
+					}
+				},
+				{
+					"name": "Get Directors",
+					"request": {
+						"method": "GET",
+						"url": { "raw": "{{baseUrl}}/masters/companies/{{companyId}}/directors", "host": ["{{baseUrl}}"], "path": ["masters", "companies", "{{companyId}}", "directors"] }
+					}
+				},
+				{
+					"name": "Create Director",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"din\": \"00001695\",\n    \"name\": \"Mukesh Ambani\",\n    \"designation\": \"Managing Director\",\n    \"appointment_date\": \"2020-04-01\",\n    \"tenure_years\": 5\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/masters/companies/{{companyId}}/directors", "host": ["{{baseUrl}}"], "path": ["masters", "companies", "{{companyId}}", "directors"] }
+					}
+				},
+				{
+					"name": "Update Director",
+					"request": {
+						"method": "PUT",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"din\": \"00001695\",\n    \"name\": \"Mukesh Ambani\",\n    \"designation\": \"Chairman & MD\",\n    \"appointment_date\": \"2020-04-01\",\n    \"tenure_years\": 5,\n    \"is_active\": true\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/masters/directors/1", "host": ["{{baseUrl}}"], "path": ["masters", "directors", "1"] }
+					}
+				},
+				{
+					"name": "Get RTAs",
+					"request": {
+						"method": "GET",
+						"url": { "raw": "{{baseUrl}}/masters/rta", "host": ["{{baseUrl}}"], "path": ["masters", "rta"] }
+					}
+				},
+				{
+					"name": "Create RTA",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"KFin Technologies\",\n    \"address\": \"Hyderabad, Telangana\",\n    \"contact_person\": \"Registrar Team\",\n    \"phone\": \"04067162222\",\n    \"email\": \"einward.ris@kfintech.com\",\n    \"isin_code\": \"INE002A01018\"\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/masters/rta", "host": ["{{baseUrl}}"], "path": ["masters", "rta"] }
+					}
+				},
+				{
+					"name": "Link Company to RTA",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"company_id\": 1,\n    \"rta_id\": 1\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/masters/rta/link", "host": ["{{baseUrl}}"], "path": ["masters", "rta", "link"] }
+					}
+				},
+				{
+					"name": "Get PCS Firms",
+					"request": {
+						"method": "GET",
+						"url": { "raw": "{{baseUrl}}/masters/pcs-firms", "host": ["{{baseUrl}}"], "path": ["masters", "pcs-firms"] }
+					}
+				},
+				{
+					"name": "Create PCS Firm",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"firm_name\": \"CS Associates\",\n    \"urn\": \"S2021MH123456\",\n    \"address\": \"Mumbai\",\n    \"gstin\": \"27AAACS1234A1Z5\",\n    \"pan\": \"AAACS1234A\",\n    \"contact_person\": \"Mr. Sharma\",\n    \"phone\": \"9876543210\",\n    \"email\": \"firm@csassociates.com\",\n    \"firm_type\": \"pcs\"\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/masters/pcs-firms", "host": ["{{baseUrl}}"], "path": ["masters", "pcs-firms"] }
+					}
+				}
+			]
+		},
+		{
+			"name": "5. Incorporation",
+			"item": [
+				{
+					"name": "Get Incorporations",
+					"request": {
+						"method": "GET",
+						"url": { "raw": "{{baseUrl}}/incorporations", "host": ["{{baseUrl}}"], "path": ["incorporations"] }
+					}
+				},
+				{
+					"name": "Create Incorporation (RUN-LLP)",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"form_type\": \"RUN-LLP\",\n    \"proposed_name_1\": \"TechVentures LLP\",\n    \"proposed_name_2\": \"TechVentures Services LLP\",\n    \"mca_user\": \"mca_admin@company.com\",\n    \"submission_status\": \"draft\",\n    \"fee_paid\": 1000,\n    \"remarks\": \"Name reservation for new LLP\"\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/incorporations", "host": ["{{baseUrl}}"], "path": ["incorporations"] }
+					}
+				},
+				{
+					"name": "Update Incorporation",
+					"request": {
+						"method": "PUT",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"form_type\": \"RUN-LLP\",\n    \"proposed_name_1\": \"TechVentures LLP\",\n    \"proposed_name_2\": \"TechVentures Services LLP\",\n    \"srn\": \"SRN-2026-001234\",\n    \"mca_user\": \"mca_admin@company.com\",\n    \"submission_status\": \"approved\",\n    \"approval_date\": \"2026-02-25\",\n    \"expiry_date\": \"2026-05-25\",\n    \"fee_paid\": 1000\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/incorporations/1", "host": ["{{baseUrl}}"], "path": ["incorporations", "1"] }
+					}
+				}
+			]
+		},
+		{
+			"name": "6. Tasks & Workflow",
+			"item": [
+				{
+					"name": "Get All Tasks",
+					"request": {
+						"method": "GET",
+						"url": { "raw": "{{baseUrl}}/tasks?page=1&limit=20", "host": ["{{baseUrl}}"], "path": ["tasks"], "query": [{ "key": "page", "value": "1" }, { "key": "limit", "value": "20" }] }
+					}
+				},
+				{
+					"name": "Get Task by ID",
+					"request": {
+						"method": "GET",
+						"url": { "raw": "{{baseUrl}}/tasks/{{taskId}}", "host": ["{{baseUrl}}"], "path": ["tasks", "{{taskId}}"] }
+					}
+				},
+				{
+					"name": "Create Task",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"if (jsonData.data && jsonData.data.id) {",
+									"    pm.collectionVariables.set('taskId', jsonData.data.id);",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"File Annual Return for Acme Corp\",\n    \"description\": \"Prepare and file AOC-4 for FY 2025-26\",\n    \"client_id\": 1,\n    \"company_id\": 1,\n    \"priority\": \"high\",\n    \"due_date\": \"2026-03-31\",\n    \"estimated_hours\": 4,\n    \"category\": \"Annual Filing\"\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/tasks", "host": ["{{baseUrl}}"], "path": ["tasks"] }
+					}
+				},
+				{
+					"name": "Update Task",
+					"request": {
+						"method": "PUT",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"File Annual Return for Acme Corp\",\n    \"description\": \"Updated description\",\n    \"priority\": \"high\",\n    \"status\": \"in_progress\",\n    \"due_date\": \"2026-03-31\",\n    \"estimated_hours\": 4,\n    \"actual_hours\": 2,\n    \"category\": \"Annual Filing\"\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/tasks/{{taskId}}", "host": ["{{baseUrl}}"], "path": ["tasks", "{{taskId}}"] }
+					}
+				},
+				{
+					"name": "Add Comment",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"comment\": \"Completed financial statement review, moving to form preparation.\"\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/tasks/{{taskId}}/comments", "host": ["{{baseUrl}}"], "path": ["tasks", "{{taskId}}", "comments"] }
+					}
+				},
+				{
+					"name": "Start Timer",
+					"request": {
+						"method": "POST",
+						"url": { "raw": "{{baseUrl}}/tasks/{{taskId}}/timer/start", "host": ["{{baseUrl}}"], "path": ["tasks", "{{taskId}}", "timer", "start"] }
+					}
+				},
+				{
+					"name": "Stop Timer",
+					"request": {
+						"method": "PUT",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"notes\": \"Completed form preparation\"\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/tasks/timer/1/stop", "host": ["{{baseUrl}}"], "path": ["tasks", "timer", "1", "stop"] }
+					}
+				},
+				{
+					"name": "Get Call Logs",
+					"request": {
+						"method": "GET",
+						"url": { "raw": "{{baseUrl}}/tasks/call-logs/list", "host": ["{{baseUrl}}"], "path": ["tasks", "call-logs", "list"] }
+					}
+				},
+				{
+					"name": "Create Call Log",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"client_id\": 1,\n    \"contact_person\": \"Mr. Sharma\",\n    \"mobile_number\": \"9876543210\",\n    \"start_time\": \"2026-02-25T10:00:00\",\n    \"end_time\": \"2026-02-25T10:30:00\",\n    \"duration_minutes\": 30,\n    \"notes\": \"Discussed compliance requirements for FY 2025-26\"\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/tasks/call-logs", "host": ["{{baseUrl}}"], "path": ["tasks", "call-logs"] }
+					}
+				},
+				{
+					"name": "Get Timesheets",
+					"request": {
+						"method": "GET",
+						"url": { "raw": "{{baseUrl}}/tasks/timesheets/report", "host": ["{{baseUrl}}"], "path": ["tasks", "timesheets", "report"] }
+					}
+				}
+			]
+		},
+		{
+			"name": "7. Events & Calendar",
+			"item": [
+				{
+					"name": "Get Events",
+					"request": {
+						"method": "GET",
+						"url": { "raw": "{{baseUrl}}/events?start_date=2026-01-01&end_date=2026-12-31", "host": ["{{baseUrl}}"], "path": ["events"], "query": [{ "key": "start_date", "value": "2026-01-01" }, { "key": "end_date", "value": "2026-12-31" }] }
+					}
+				},
+				{
+					"name": "Create Event",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Board Meeting - Q4 Review\",\n    \"description\": \"Quarterly board meeting for financial review\",\n    \"event_type\": \"board_meeting\",\n    \"start_datetime\": \"2026-03-15T10:00:00\",\n    \"end_datetime\": \"2026-03-15T13:00:00\",\n    \"location\": \"Boardroom, 5th Floor\",\n    \"company_id\": 1,\n    \"attendee_ids\": [1, 2]\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/events", "host": ["{{baseUrl}}"], "path": ["events"] }
+					}
+				},
+				{
+					"name": "Respond to Event",
+					"request": {
+						"method": "PUT",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"status\": \"accepted\"\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/events/1/respond", "host": ["{{baseUrl}}"], "path": ["events", "1", "respond"] }
+					}
+				}
+			]
+		},
+		{
+			"name": "8. Documents",
+			"item": [
+				{
+					"name": "Get Documents",
+					"request": {
+						"method": "GET",
+						"url": { "raw": "{{baseUrl}}/documents", "host": ["{{baseUrl}}"], "path": ["documents"] }
+					}
+				},
+				{
+					"name": "Create Document",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Board Resolution - Director Appointment\",\n    \"description\": \"Board resolution for appointment of new director\",\n    \"file_url\": \"https://storage.example.com/docs/board-resolution.pdf\",\n    \"file_name\": \"board-resolution.pdf\",\n    \"file_size\": 524288,\n    \"mime_type\": \"application/pdf\",\n    \"category\": \"Board Resolutions\",\n    \"client_id\": 1,\n    \"company_id\": 1\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/documents", "host": ["{{baseUrl}}"], "path": ["documents"] }
+					}
+				},
+				{
+					"name": "Get Document Requests",
+					"request": {
+						"method": "GET",
+						"url": { "raw": "{{baseUrl}}/documents/requests", "host": ["{{baseUrl}}"], "path": ["documents", "requests"] }
+					}
+				},
+				{
+					"name": "Create Document Request (Magic Link)",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"document_title\": \"Balance Sheet FY 2025-26\",\n    \"description\": \"Please upload signed balance sheet\",\n    \"client_id\": 1,\n    \"due_date\": \"2026-03-15\"\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/documents/requests", "host": ["{{baseUrl}}"], "path": ["documents", "requests"] }
+					}
+				},
+				{
+					"name": "Upload via Magic Link (Public)",
+					"request": {
+						"auth": { "type": "noauth" },
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"file_url\": \"https://storage.example.com/uploads/balance-sheet.pdf\",\n    \"file_name\": \"balance-sheet.pdf\",\n    \"file_size\": 1048576,\n    \"mime_type\": \"application/pdf\"\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/documents/upload/MAGIC_LINK_TOKEN_HERE", "host": ["{{baseUrl}}"], "path": ["documents", "upload", "MAGIC_LINK_TOKEN_HERE"] }
+					}
+				}
+			]
+		},
+		{
+			"name": "9. Reports",
+			"item": [
+				{
+					"name": "MIS Report",
+					"request": {
+						"method": "GET",
+						"url": { "raw": "{{baseUrl}}/reports/mis?financial_year=2025-26", "host": ["{{baseUrl}}"], "path": ["reports", "mis"], "query": [{ "key": "financial_year", "value": "2025-26" }] }
+					}
+				},
+				{
+					"name": "Client Profitability Report",
+					"request": {
+						"method": "GET",
+						"url": { "raw": "{{baseUrl}}/reports/client-profitability", "host": ["{{baseUrl}}"], "path": ["reports", "client-profitability"] }
+					}
+				},
+				{
+					"name": "Team Efficiency Report",
+					"request": {
+						"method": "GET",
+						"url": { "raw": "{{baseUrl}}/reports/team-efficiency", "host": ["{{baseUrl}}"], "path": ["reports", "team-efficiency"] }
+					}
+				},
+				{
+					"name": "Get Report Schedules",
+					"request": {
+						"method": "GET",
+						"url": { "raw": "{{baseUrl}}/reports/schedules", "host": ["{{baseUrl}}"], "path": ["reports", "schedules"] }
+					}
+				},
+				{
+					"name": "Create Report Schedule",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"report_type\": \"mis\",\n    \"filters\": { \"financial_year\": \"2025-26\" },\n    \"schedule_cron\": \"0 9 * * 1\",\n    \"email_recipients\": \"admin@company.com,manager@company.com\"\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/reports/schedules", "host": ["{{baseUrl}}"], "path": ["reports", "schedules"] }
+					}
+				}
+			]
+		},
+		{
+			"name": "10. HRMS",
+			"item": [
+				{
+					"name": "Get Employees",
+					"request": {
+						"method": "GET",
+						"url": { "raw": "{{baseUrl}}/hrms/employees", "host": ["{{baseUrl}}"], "path": ["hrms", "employees"] }
+					}
+				},
+				{
+					"name": "Create Employee",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"user_id\": 1,\n    \"employee_code\": \"EMP001\",\n    \"department\": \"Compliance\",\n    \"designation\": \"Senior Associate\",\n    \"date_of_joining\": \"2024-01-15\",\n    \"salary\": 50000,\n    \"pan\": \"ABCDE1234F\",\n    \"emergency_contact\": \"9876543210\"\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/hrms/employees", "host": ["{{baseUrl}}"], "path": ["hrms", "employees"] }
+					}
+				},
+				{
+					"name": "Clock In",
+					"request": {
+						"method": "POST",
+						"url": { "raw": "{{baseUrl}}/hrms/attendance/clock-in", "host": ["{{baseUrl}}"], "path": ["hrms", "attendance", "clock-in"] }
+					}
+				},
+				{
+					"name": "Clock Out",
+					"request": {
+						"method": "PUT",
+						"url": { "raw": "{{baseUrl}}/hrms/attendance/clock-out", "host": ["{{baseUrl}}"], "path": ["hrms", "attendance", "clock-out"] }
+					}
+				},
+				{
+					"name": "Get Attendance",
+					"request": {
+						"method": "GET",
+						"url": { "raw": "{{baseUrl}}/hrms/attendance?month=2&year=2026", "host": ["{{baseUrl}}"], "path": ["hrms", "attendance"], "query": [{ "key": "month", "value": "2" }, { "key": "year", "value": "2026" }] }
+					}
+				},
+				{
+					"name": "Apply Leave",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"leave_type\": \"casual\",\n    \"start_date\": \"2026-03-10\",\n    \"end_date\": \"2026-03-11\",\n    \"total_days\": 2,\n    \"reason\": \"Personal work\"\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/hrms/leaves", "host": ["{{baseUrl}}"], "path": ["hrms", "leaves"] }
+					}
+				},
+				{
+					"name": "Approve/Reject Leave",
+					"request": {
+						"method": "PUT",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"status\": \"approved\"\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/hrms/leaves/1/approve", "host": ["{{baseUrl}}"], "path": ["hrms", "leaves", "1", "approve"] }
+					}
+				}
+			]
+		},
+		{
+			"name": "11. Business Manager",
+			"item": [
+				{
+					"name": "Get Registrations",
+					"request": {
+						"method": "GET",
+						"url": { "raw": "{{baseUrl}}/business/registrations", "host": ["{{baseUrl}}"], "path": ["business", "registrations"] }
+					}
+				},
+				{
+					"name": "Create Registration",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"company_id\": 1,\n    \"document_type\": \"GST Registration\",\n    \"document_number\": \"27AAACA1234A1Z5\",\n    \"issuing_authority\": \"GST Department\",\n    \"issue_date\": \"2023-04-01\",\n    \"expiry_date\": \"2026-03-31\",\n    \"alert_days_before\": 30\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/business/registrations", "host": ["{{baseUrl}}"], "path": ["business", "registrations"] }
+					}
+				},
+				{
+					"name": "Get Expiring Items",
+					"request": {
+						"method": "GET",
+						"url": { "raw": "{{baseUrl}}/business/expiring?days=30", "host": ["{{baseUrl}}"], "path": ["business", "expiring"], "query": [{ "key": "days", "value": "30" }] }
+					}
+				}
+			]
+		},
+		{
+			"name": "12. Finance",
+			"item": [
+				{
+					"name": "Get Invoices",
+					"request": {
+						"method": "GET",
+						"url": { "raw": "{{baseUrl}}/finance/invoices", "host": ["{{baseUrl}}"], "path": ["finance", "invoices"] }
+					}
+				},
+				{
+					"name": "Create Invoice",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"invoice_number\": \"INV-2026-001\",\n    \"client_id\": 1,\n    \"company_id\": 1,\n    \"issue_date\": \"2026-02-25\",\n    \"due_date\": \"2026-03-25\",\n    \"subtotal\": 50000,\n    \"tax_amount\": 9000,\n    \"total_amount\": 59000,\n    \"notes\": \"Annual compliance fee\",\n    \"items\": [\n        { \"description\": \"Annual Return Filing\", \"quantity\": 1, \"rate\": 25000, \"amount\": 25000 },\n        { \"description\": \"Board Meeting Minutes\", \"quantity\": 4, \"rate\": 6250, \"amount\": 25000 }\n    ]\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/finance/invoices", "host": ["{{baseUrl}}"], "path": ["finance", "invoices"] }
+					}
+				},
+				{
+					"name": "Get Invoice by ID",
+					"request": {
+						"method": "GET",
+						"url": { "raw": "{{baseUrl}}/finance/invoices/1", "host": ["{{baseUrl}}"], "path": ["finance", "invoices", "1"] }
+					}
+				},
+				{
+					"name": "Update Invoice (Payment)",
+					"request": {
+						"method": "PUT",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"payment_status\": \"paid\",\n    \"payment_date\": \"2026-03-01\"\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/finance/invoices/1", "host": ["{{baseUrl}}"], "path": ["finance", "invoices", "1"] }
+					}
+				},
+				{
+					"name": "Get Expenses",
+					"request": {
+						"method": "GET",
+						"url": { "raw": "{{baseUrl}}/finance/expenses", "host": ["{{baseUrl}}"], "path": ["finance", "expenses"] }
+					}
+				},
+				{
+					"name": "Create Expense",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"category\": \"Office Supplies\",\n    \"description\": \"Printer cartridges\",\n    \"amount\": 3500,\n    \"expense_date\": \"2026-02-25\",\n    \"payment_mode\": \"upi\"\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/finance/expenses", "host": ["{{baseUrl}}"], "path": ["finance", "expenses"] }
+					}
+				},
+				{
+					"name": "Profit/Loss Report",
+					"request": {
+						"method": "GET",
+						"url": { "raw": "{{baseUrl}}/finance/profit-loss", "host": ["{{baseUrl}}"], "path": ["finance", "profit-loss"] }
+					}
+				}
+			]
+		},
+		{
+			"name": "13. Support",
+			"item": [
+				{
+					"name": "Get Tickets",
+					"request": {
+						"method": "GET",
+						"url": { "raw": "{{baseUrl}}/support/tickets", "host": ["{{baseUrl}}"], "path": ["support", "tickets"] }
+					}
+				},
+				{
+					"name": "Create Ticket",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"subject\": \"Unable to download VPD documents\",\n    \"description\": \"Getting error when trying to download VPD for CIN L12345\",\n    \"category\": \"bug\",\n    \"priority\": \"high\",\n    \"screenshot_url\": \"https://storage.example.com/screenshots/error.png\"\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/support/tickets", "host": ["{{baseUrl}}"], "path": ["support", "tickets"] }
+					}
+				},
+				{
+					"name": "Update Ticket (Resolve)",
+					"request": {
+						"method": "PUT",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"status\": \"resolved\",\n    \"resolution_notes\": \"Fixed the VPD download service. Issue was with expired MCA session.\"\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/support/tickets/1", "host": ["{{baseUrl}}"], "path": ["support", "tickets", "1"] }
+					}
+				}
+			]
+		},
+		{
+			"name": "14. Secretarial",
+			"item": [
+				{
+					"name": "Get Filing Status",
+					"request": {
+						"method": "GET",
+						"url": { "raw": "{{baseUrl}}/secretarial/filings?company_id=1", "host": ["{{baseUrl}}"], "path": ["secretarial", "filings"], "query": [{ "key": "company_id", "value": "1" }] }
+					}
+				},
+				{
+					"name": "Create Filing Status",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"company_id\": 1,\n    \"financial_year\": \"2025-26\",\n    \"form_type\": \"AOC-4\",\n    \"status\": \"pending\",\n    \"due_date\": \"2026-10-30\",\n    \"remarks\": \"Annual financial statement filing\"\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/secretarial/filings", "host": ["{{baseUrl}}"], "path": ["secretarial", "filings"] }
+					}
+				},
+				{
+					"name": "Bulk Update Filings",
+					"request": {
+						"method": "PUT",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"updates\": [\n        { \"id\": 1, \"status\": \"filed\" },\n        { \"id\": 2, \"status\": \"filed\" }\n    ]\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/secretarial/filings/bulk-update", "host": ["{{baseUrl}}"], "path": ["secretarial", "filings", "bulk-update"] }
+					}
+				},
+				{
+					"name": "Get Compliance Reminders",
+					"request": {
+						"method": "GET",
+						"url": { "raw": "{{baseUrl}}/secretarial/reminders", "host": ["{{baseUrl}}"], "path": ["secretarial", "reminders"] }
+					}
+				},
+				{
+					"name": "Create Reminder",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"company_id\": 1,\n    \"compliance_type\": \"AOC-4 Filing\",\n    \"due_date\": \"2026-10-30\",\n    \"reminder_date\": \"2026-10-15\",\n    \"email_recipients\": \"cs@company.com\",\n    \"email_subject\": \"Reminder: AOC-4 due in 15 days\",\n    \"email_body\": \"<p>Please ensure AOC-4 filing is completed before the due date.</p>\",\n    \"send_whatsapp\": true\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/secretarial/reminders", "host": ["{{baseUrl}}"], "path": ["secretarial", "reminders"] }
+					}
+				},
+				{
+					"name": "Get DSC Tokens",
+					"request": {
+						"method": "GET",
+						"url": { "raw": "{{baseUrl}}/secretarial/dsc", "host": ["{{baseUrl}}"], "path": ["secretarial", "dsc"] }
+					}
+				},
+				{
+					"name": "Create DSC Token",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"holder_name\": \"Mukesh Ambani\",\n    \"din\": \"00001695\",\n    \"company_id\": 1,\n    \"client_group\": \"Corporate\",\n    \"token_serial\": \"DSC-2026-001\",\n    \"provider\": \"eMudhra\",\n    \"issue_date\": \"2025-06-01\",\n    \"expiry_date\": \"2027-06-01\",\n    \"box_location\": \"Box A\"\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/secretarial/dsc", "host": ["{{baseUrl}}"], "path": ["secretarial", "dsc"] }
+					}
+				},
+				{
+					"name": "Toggle DSC Status (In/Out)",
+					"request": {
+						"method": "PUT",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"current_status\": \"out\",\n    \"checked_out_to\": \"Mr. Sharma for signing\"\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/secretarial/dsc/1/toggle", "host": ["{{baseUrl}}"], "path": ["secretarial", "dsc", "1", "toggle"] }
+					}
+				},
+				{
+					"name": "Get DSC Boxes",
+					"request": {
+						"method": "GET",
+						"url": { "raw": "{{baseUrl}}/secretarial/dsc-boxes", "host": ["{{baseUrl}}"], "path": ["secretarial", "dsc-boxes"] }
+					}
+				},
+				{
+					"name": "Create DSC Box",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Box A\",\n    \"location\": \"Safe Room - Cabinet 1\",\n    \"capacity\": 50\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/secretarial/dsc-boxes", "host": ["{{baseUrl}}"], "path": ["secretarial", "dsc-boxes"] }
+					}
+				},
+				{
+					"name": "Director Tenure Tracker",
+					"request": {
+						"method": "GET",
+						"url": { "raw": "{{baseUrl}}/secretarial/director-tenures?company_id=1", "host": ["{{baseUrl}}"], "path": ["secretarial", "director-tenures"], "query": [{ "key": "company_id", "value": "1" }] }
+					}
+				}
+			]
+		},
+		{
+			"name": "15. MCA Services",
+			"item": [
+				{
+					"name": "Get MCA Downloads",
+					"request": {
+						"method": "GET",
+						"url": { "raw": "{{baseUrl}}/mca/downloads", "host": ["{{baseUrl}}"], "path": ["mca", "downloads"] }
+					}
+				},
+				{
+					"name": "Request VPD Download",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"company_id\": 1,\n    \"srn\": \"SRN-2026-001234\",\n    \"download_type\": \"vpd\",\n    \"financial_year\": \"2025-26\"\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/mca/downloads", "host": ["{{baseUrl}}"], "path": ["mca", "downloads"] }
+					}
+				},
+				{
+					"name": "Update Download Status",
+					"request": {
+						"method": "PUT",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"status\": \"completed\",\n    \"file_url\": \"https://storage.example.com/downloads/vpd-2025-26.zip\"\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/mca/downloads/1", "host": ["{{baseUrl}}"], "path": ["mca", "downloads", "1"] }
+					}
+				}
+			]
+		},
+		{
+			"name": "16. E-Filing",
+			"item": [
+				{
+					"name": "Get E-Form Filings",
+					"request": {
+						"method": "GET",
+						"url": { "raw": "{{baseUrl}}/efiling", "host": ["{{baseUrl}}"], "path": ["efiling"] }
+					}
+				},
+				{
+					"name": "Create CHG-4 Filing",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"company_id\": 1,\n    \"form_type\": \"CHG-4\",\n    \"financial_year\": \"2025-26\",\n    \"charge_id\": \"CHG-001\",\n    \"charge_amount\": 5000000,\n    \"charge_date\": \"2025-04-01\",\n    \"signing_director_id\": 1,\n    \"remarks\": \"Satisfaction of charge with SBI\"\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/efiling", "host": ["{{baseUrl}}"], "path": ["efiling"] }
+					}
+				},
+				{
+					"name": "Update E-Form Filing Status",
+					"request": {
+						"method": "PUT",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"form_type\": \"CHG-4\",\n    \"financial_year\": \"2025-26\",\n    \"charge_id\": \"CHG-001\",\n    \"charge_amount\": 5000000,\n    \"charge_date\": \"2025-04-01\",\n    \"signing_director_id\": 1,\n    \"status\": \"filed\",\n    \"srn\": \"SRN-CHG4-2026-001\",\n    \"pdf_url\": \"https://storage.example.com/eforms/chg4.pdf\"\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/efiling/1", "host": ["{{baseUrl}}"], "path": ["efiling", "1"] }
+					}
+				},
+				{
+					"name": "Get E-Form by ID",
+					"request": {
+						"method": "GET",
+						"url": { "raw": "{{baseUrl}}/efiling/1", "host": ["{{baseUrl}}"], "path": ["efiling", "1"] }
+					}
+				}
+			]
+		}
+	]
+}
