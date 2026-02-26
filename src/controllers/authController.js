@@ -110,6 +110,94 @@ const login = async (req, res) => {
 };
 
 /**
+ * Register Controller
+ * POST /api/v1/auth/register
+ */
+const register = async (req, res) => {
+    const client = await pool.getConnection();
+
+    try {
+        const { email, password, firstName, lastName, phone, role } = req.body;
+
+        // Check if user already exists
+        const [existingUsers] = await client.query(
+            'SELECT id FROM users WHERE email = ?',
+            [email.toLowerCase()]
+        );
+
+        if (existingUsers.length > 0) {
+            return res.status(409).json({
+                success: false,
+                message: 'User with this email already exists'
+            });
+        }
+
+        // Hash password
+        const saltRounds = 10;
+        const passwordHash = await bcrypt.hash(password, saltRounds);
+
+        // Insert new user
+        const userRole = role || 'employee'; // default to employee
+        const [result] = await client.query(
+            `INSERT INTO users (email, password_hash, first_name, last_name, phone, role)
+             VALUES (?, ?, ?, ?, ?, ?)`,
+            [email.toLowerCase(), passwordHash, firstName, lastName, phone, userRole]
+        );
+
+        // Generate JWT tokens
+        const accessToken = jwt.sign(
+            { userId: result.insertId, email: email.toLowerCase() },
+            process.env.JWT_SECRET,
+            { expiresIn: process.env.JWT_EXPIRES_IN || '24h' }
+        );
+
+        const refreshToken = jwt.sign(
+            { userId: result.insertId },
+            process.env.JWT_REFRESH_SECRET,
+            { expiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d' }
+        );
+
+        // Store refresh token in database
+        const refreshTokenExpiry = new Date();
+        refreshTokenExpiry.setDate(refreshTokenExpiry.getDate() + 7);
+
+        await client.query(
+            `INSERT INTO refresh_tokens (user_id, token, expires_at)
+             VALUES (?, ?, ?)`,
+            [result.insertId, refreshToken, refreshTokenExpiry]
+        );
+
+        // Log successful registration
+        await logAuthEvent(result.insertId, 'REGISTER_SUCCESS', req, true);
+
+        res.status(201).json({
+            success: true,
+            message: 'User registered successfully',
+            data: {
+                user: {
+                    id: result.insertId,
+                    email: email.toLowerCase(),
+                    firstName,
+                    lastName,
+                    phone,
+                    role: userRole
+                },
+                accessToken,
+                refreshToken
+            }
+        });
+    } catch (error) {
+        console.error('Registration error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'An error occurred during registration'
+        });
+    } finally {
+        client.release();
+    }
+};
+
+/**
  * Forgot Password Controller
  * POST /api/v1/auth/forgot-password
  */
@@ -335,6 +423,7 @@ const getProfile = async (req, res) => {
 
 module.exports = {
     login,
+    register,
     forgotPassword,
     resetPassword,
     logout,

@@ -4,6 +4,7 @@ const authController = require('../controllers/authController');
 const { authenticateToken } = require('../middleware/auth');
 const {
     validateLogin,
+    validateRegister,
     validateForgotPassword,
     validateResetPassword
 } = require('../middleware/validation');
@@ -18,6 +19,13 @@ const {
  * @access  Public
  */
 router.post('/login', authLimiter, validateLogin, authController.login);
+
+/**
+ * @route   POST /api/v1/auth/register
+ * @desc    Register a new user
+ * @access  Public
+ */
+router.post('/register', authLimiter, validateRegister, authController.register);
 
 /**
  * @route   POST /api/v1/auth/forgot-password
