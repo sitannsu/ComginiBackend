@@ -51,6 +51,51 @@
             ]
         },
         {
+            "name": "Register - New User",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "if (pm.response.code === 201) {",
+                            "    var jsonData = pm.response.json();",
+                            "    pm.environment.set('access_token', jsonData.data.accessToken);",
+                            "    pm.environment.set('refresh_token', jsonData.data.refreshToken);",
+                            "    console.log('✅ Registration successful! Token saved.');",
+                            "}"
+                        ]
+                    }
+                }
+            ],
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"email\": \"newuser@example.com\",\n  \"password\": \"Password123!@#\",\n  \"firstName\": \"New\",\n  \"lastName\": \"User\",\n  \"phone\": \"+1234567890\",\n  \"role\": \"employee\"\n}"
+                },
+                "url": {
+                    "raw": "{{base_url}}/api/v1/auth/register",
+                    "host": [
+                        "{{base_url}}"
+                    ],
+                    "path": [
+                        "api",
+                        "v1",
+                        "auth",
+                        "register"
+                    ]
+                },
+                "description": "Register a new user account. Returns user data and JWT tokens."
+            },
+            "response": []
+        },
+        {
             "name": "1. Login - Success",
             "event": [
                 {
