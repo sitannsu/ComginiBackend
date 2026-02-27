@@ -55,8 +55,10 @@ async function sendPasswordResetEmail(email, resetToken, userName) {
         console.log(`Password reset email sent to ${email}`);
         return true;
     } catch (error) {
-        console.error('Failed to send password reset email:', error);
-        throw new Error('Failed to send password reset email');
+        console.error('Failed to send password reset email:', error.message);
+        // Don't throw — allow the API to succeed even if email delivery fails
+        // The reset token is still saved in DB and can be used
+        return false;
     }
 }
 
