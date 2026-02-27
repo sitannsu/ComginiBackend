@@ -27,6 +27,28 @@ async function runMigrations() {
             await connection.query(statement);
         }
 
+        // Run alter migrations for existing tables
+        console.log('🔧 Running alter migrations...');
+        const alterPath = path.join(__dirname, 'alter_migrations.sql');
+        if (fs.existsSync(alterPath)) {
+            const alterSql = fs.readFileSync(alterPath, 'utf8');
+            const alterStatements = alterSql
+                .split('\n')
+                .filter(line => !line.trim().startsWith('--'))
+                .join('\n')
+                .split(';')
+                .map(s => s.trim())
+                .filter(s => s.length > 0);
+            for (const stmt of alterStatements) {
+                try {
+                    console.log('  Alter:', stmt.substring(0, 60) + '...');
+                    await connection.query(stmt);
+                } catch (e) {
+                    console.log('  (skipped - may already exist):', e.message.substring(0, 80));
+                }
+            }
+        }
+
         console.log('✅ Database migrations completed successfully');
         process.exit(0);
     } catch (error) {
