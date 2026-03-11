@@ -33,10 +33,58 @@ const getCompanyById = async (req, res) => {
 
 const createCompany = async (req, res) => {
     try {
-        const { name, cin, llpin, company_type, status, roc, registration_date, email, address, authorized_capital, paid_up_capital } = req.body;
+        // Support both API + UI payload shapes (snake_case + camelCase)
+        const {
+            name,
+            companyName,
+            cin,
+            llpin,
+            cinOrLlpin,
+            company_type,
+            companyType,
+            status,
+            roc,
+            registration_date,
+            registrationDate,
+            email,
+            phone,
+            address,
+            authorized_capital,
+            authorizedCapital,
+            paid_up_capital,
+            paidUpCapital,
+        } = req.body;
+
+        const resolvedName = (typeof name === 'string' ? name : companyName);
+        if (!resolvedName || typeof resolvedName !== 'string' || resolvedName.trim().length === 0) {
+            return res.status(400).json({ success: false, message: 'name is required' });
+        }
+
+        // mysql2 does not allow `undefined` in bind parameters.
+        const toNull = (v) => (v === undefined ? null : v);
+
+        // UI provides one field: cinOrLlpin
+        const cinValue = cin !== undefined ? cin : cinOrLlpin;
+        const llpinValue = llpin !== undefined ? llpin : null;
+        const resolvedCompanyType = company_type || companyType || 'company';
+
         const [result] = await pool.query(
-            `INSERT INTO companies (name, cin, llpin, company_type, status, roc, registration_date, email, address, authorized_capital, paid_up_capital) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            [name, cin, llpin, company_type || 'company', status, roc, registration_date, email, address, authorized_capital, paid_up_capital]
+            // Keep compatibility with existing DB schema (no `phone` column by default).
+            `INSERT INTO companies (name, cin, llpin, company_type, status, roc, registration_date, email, address, authorized_capital, paid_up_capital)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [
+                resolvedName.trim(),
+                toNull(cinValue),
+                toNull(llpinValue),
+                resolvedCompanyType,
+                toNull(status),
+                toNull(roc),
+                toNull(registration_date !== undefined ? registration_date : registrationDate),
+                toNull(email),
+                toNull(address),
+                toNull(authorized_capital !== undefined ? authorized_capital : authorizedCapital),
+                toNull(paid_up_capital !== undefined ? paid_up_capital : paidUpCapital),
+            ]
         );
         const [rows] = await pool.query('SELECT * FROM companies WHERE id = ?', [result.insertId]);
         res.status(201).json({ success: true, data: rows[0] });

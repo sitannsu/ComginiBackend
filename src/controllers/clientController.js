@@ -39,11 +39,58 @@ const getClientById = async (req, res) => {
 
 const createClient = async (req, res) => {
     try {
-        const { name, email, phone, company_name, cin, pan, gstin, address, city, state, pincode, client_group, risk_score } = req.body;
+        // Support both API + UI payload shapes (snake_case + camelCase)
+        const {
+            name,
+            email,
+            phone,
+            company_name,
+            companyName,
+            cin,
+            pan,
+            gstin,
+            address,
+            city,
+            state,
+            pincode,
+            pinCode,
+            client_group,
+            clientGroup,
+            risk_score,
+            riskScore,
+        } = req.body;
+
+        if (!name || typeof name !== 'string' || name.trim().length === 0) {
+            return res.status(400).json({ success: false, message: 'name is required' });
+        }
+
+        // mysql2 does not allow `undefined` in bind parameters.
+        const toNull = (v) => (v === undefined ? null : v);
+
+        const resolvedCompanyName = company_name !== undefined ? company_name : companyName;
+        const resolvedPincode = pincode !== undefined ? pincode : pinCode;
+        const resolvedClientGroup = client_group !== undefined ? client_group : clientGroup;
+        const resolvedRiskScore = (risk_score !== undefined ? risk_score : riskScore) || 'low';
+
         const [result] = await pool.query(
             `INSERT INTO clients (name, email, phone, company_name, cin, pan, gstin, address, city, state, pincode, client_group, risk_score, created_by)
              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            [name, email, phone, company_name, cin, pan, gstin, address, city, state, pincode, client_group, risk_score || 'low', req.user.id]
+            [
+                name.trim(),
+                toNull(email),
+                toNull(phone),
+                toNull(resolvedCompanyName),
+                toNull(cin),
+                toNull(pan),
+                toNull(gstin),
+                toNull(address),
+                toNull(city),
+                toNull(state),
+                toNull(resolvedPincode),
+                toNull(resolvedClientGroup),
+                resolvedRiskScore,
+                toNull(req.user?.id),
+            ]
         );
         const [rows] = await pool.query('SELECT * FROM clients WHERE id = ?', [result.insertId]);
         res.status(201).json({ success: true, data: rows[0] });
@@ -55,10 +102,57 @@ const createClient = async (req, res) => {
 
 const updateClient = async (req, res) => {
     try {
-        const { name, email, phone, company_name, cin, pan, gstin, address, city, state, pincode, client_group, risk_score, status } = req.body;
+        const {
+            name,
+            email,
+            phone,
+            company_name,
+            companyName,
+            cin,
+            pan,
+            gstin,
+            address,
+            city,
+            state,
+            pincode,
+            pinCode,
+            client_group,
+            clientGroup,
+            risk_score,
+            riskScore,
+            status,
+        } = req.body;
+
+        if (!name || typeof name !== 'string' || name.trim().length === 0) {
+            return res.status(400).json({ success: false, message: 'name is required' });
+        }
+
+        // mysql2 does not allow `undefined` in bind parameters.
+        const toNull = (v) => (v === undefined ? null : v);
+        const resolvedCompanyName = company_name !== undefined ? company_name : companyName;
+        const resolvedPincode = pincode !== undefined ? pincode : pinCode;
+        const resolvedClientGroup = client_group !== undefined ? client_group : clientGroup;
+        const resolvedRiskScore = risk_score !== undefined ? risk_score : riskScore;
+
         await pool.query(
             `UPDATE clients SET name=?, email=?, phone=?, company_name=?, cin=?, pan=?, gstin=?, address=?, city=?, state=?, pincode=?, client_group=?, risk_score=?, status=? WHERE id=?`,
-            [name, email, phone, company_name, cin, pan, gstin, address, city, state, pincode, client_group, risk_score, status, req.params.id]
+            [
+                name.trim(),
+                toNull(email),
+                toNull(phone),
+                toNull(resolvedCompanyName),
+                toNull(cin),
+                toNull(pan),
+                toNull(gstin),
+                toNull(address),
+                toNull(city),
+                toNull(state),
+                toNull(resolvedPincode),
+                toNull(resolvedClientGroup),
+                toNull(resolvedRiskScore),
+                toNull(status),
+                req.params.id,
+            ]
         );
         const [rows] = await pool.query('SELECT * FROM clients WHERE id = ?', [req.params.id]);
         res.json({ success: true, data: rows[0] });
@@ -82,13 +176,63 @@ const deleteClient = async (req, res) => {
 
 const addContact = async (req, res) => {
     try {
-        const { name, designation, email, phone, is_primary } = req.body;
-        if (is_primary) {
-            await pool.query('UPDATE client_contacts SET is_primary = false WHERE client_id = ?', [req.params.clientId]);
+        // Support UI payload shape (client portal)
+        const {
+            name,
+            designation,
+            job_title,
+            jobTitle,
+            first_name,
+            last_name,
+            firstName,
+            lastName,
+            email,
+            phone,
+            skype,
+            gender,
+            is_primary,
+            isPrimary,
+            client_id,
+            clientId,
+        } = req.body;
+
+        const resolvedClientId = req.params.clientId || client_id || clientId;
+        if (!resolvedClientId) {
+            return res.status(400).json({ success: false, message: 'clientId is required' });
+        }
+
+        const resolvedIsPrimary = is_primary !== undefined ? is_primary : isPrimary;
+
+        const resolvedFirstName = first_name !== undefined ? first_name : firstName;
+        const resolvedLastName = last_name !== undefined ? last_name : lastName;
+        const resolvedName =
+            name ||
+            [resolvedFirstName, resolvedLastName].filter(Boolean).join(' ').trim();
+
+        if (!resolvedName || resolvedName.length === 0) {
+            return res.status(400).json({ success: false, message: 'name (or firstName/lastName) is required' });
+        }
+
+        // mysql2 does not allow `undefined` in bind parameters.
+        const toNull = (v) => (v === undefined ? null : v);
+
+        const resolvedJobTitle = job_title !== undefined ? job_title : jobTitle;
+        const resolvedDesignation = designation || resolvedJobTitle;
+
+        if (resolvedIsPrimary) {
+            await pool.query('UPDATE client_contacts SET is_primary = false WHERE client_id = ?', [resolvedClientId]);
         }
         const [result] = await pool.query(
+            // Keep compatibility with existing DB schema (extra UI fields are accepted but not stored by default).
             'INSERT INTO client_contacts (client_id, name, designation, email, phone, is_primary) VALUES (?, ?, ?, ?, ?, ?)',
-            [req.params.clientId, name, designation, email, phone, is_primary || false]
+            [
+                resolvedClientId,
+                resolvedName,
+                toNull(resolvedDesignation),
+                toNull(email),
+                toNull(phone),
+                resolvedIsPrimary || false,
+            ]
         );
         const [rows] = await pool.query('SELECT * FROM client_contacts WHERE id = ?', [result.insertId]);
         res.status(201).json({ success: true, data: rows[0] });

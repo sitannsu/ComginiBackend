@@ -66,10 +66,28 @@ const getTaskById = async (req, res) => {
 const createTask = async (req, res) => {
     try {
         const { title, description, client_id, company_id, assigned_to, priority, status, due_date, estimated_hours, category } = req.body;
+        if (!title || typeof title !== 'string' || title.trim().length === 0) {
+            return res.status(400).json({ success: false, message: 'title is required' });
+        }
+
+        // mysql2 does not allow `undefined` in bind parameters.
+        const toNull = (v) => (v === undefined ? null : v);
         const [result] = await pool.query(
             `INSERT INTO tasks (title, description, client_id, company_id, assigned_to, assigned_by, priority, status, due_date, estimated_hours, category)
              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            [title, description, client_id, company_id, assigned_to, req.user.id, priority || 'medium', status || 'todo', due_date, estimated_hours, category]
+            [
+                title.trim(),
+                toNull(description),
+                toNull(client_id),
+                toNull(company_id),
+                toNull(assigned_to),
+                toNull(req.user?.id),
+                priority || 'medium',
+                status || 'todo',
+                toNull(due_date),
+                toNull(estimated_hours),
+                toNull(category),
+            ]
         );
         const [rows] = await pool.query('SELECT * FROM tasks WHERE id = ?', [result.insertId]);
         res.status(201).json({ success: true, data: rows[0] });
