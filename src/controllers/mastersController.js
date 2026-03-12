@@ -69,9 +69,8 @@ const createCompany = async (req, res) => {
         const resolvedCompanyType = company_type || companyType || 'company';
 
         const [result] = await pool.query(
-            // Keep compatibility with existing DB schema (no `phone` column by default).
-            `INSERT INTO companies (name, cin, llpin, company_type, status, roc, registration_date, email, address, authorized_capital, paid_up_capital)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            `INSERT INTO companies (name, cin, llpin, company_type, status, roc, registration_date, email, phone, address, authorized_capital, paid_up_capital)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
                 resolvedName.trim(),
                 toNull(cinValue),
@@ -81,6 +80,7 @@ const createCompany = async (req, res) => {
                 toNull(roc),
                 toNull(registration_date !== undefined ? registration_date : registrationDate),
                 toNull(email),
+                toNull(phone),
                 toNull(address),
                 toNull(authorized_capital !== undefined ? authorized_capital : authorizedCapital),
                 toNull(paid_up_capital !== undefined ? paid_up_capital : paidUpCapital),
@@ -96,10 +96,10 @@ const createCompany = async (req, res) => {
 
 const updateCompany = async (req, res) => {
     try {
-        const { name, cin, llpin, company_type, status, roc, registration_date, email, address, authorized_capital, paid_up_capital } = req.body;
+        const { name, cin, llpin, company_type, status, roc, registration_date, email, phone, address, authorized_capital, paid_up_capital } = req.body;
         await pool.query(
-            `UPDATE companies SET name=?, cin=?, llpin=?, company_type=?, status=?, roc=?, registration_date=?, email=?, address=?, authorized_capital=?, paid_up_capital=? WHERE id=?`,
-            [name, cin, llpin, company_type, status, roc, registration_date, email, address, authorized_capital, paid_up_capital, req.params.id]
+            `UPDATE companies SET name=?, cin=?, llpin=?, company_type=?, status=?, roc=?, registration_date=?, email=?, phone=?, address=?, authorized_capital=?, paid_up_capital=? WHERE id=?`,
+            [name, cin, llpin, company_type, status, roc, registration_date, email, phone, address, authorized_capital, paid_up_capital, req.params.id]
         );
         const [rows] = await pool.query('SELECT * FROM companies WHERE id = ?', [req.params.id]);
         res.json({ success: true, data: rows[0] });
@@ -137,9 +137,10 @@ const getDirectors = async (req, res) => {
 const createDirector = async (req, res) => {
     try {
         const { din, name, designation, appointment_date, cessation_date, tenure_years } = req.body;
+        const toNull = (v) => (v === undefined ? null : v);
         const [result] = await pool.query(
             `INSERT INTO directors (company_id, din, name, designation, appointment_date, cessation_date, tenure_years) VALUES (?, ?, ?, ?, ?, ?, ?)`,
-            [req.params.companyId, din, name, designation, appointment_date, cessation_date, tenure_years]
+            [toNull(req.params.companyId), toNull(din), name, toNull(designation), toNull(appointment_date), toNull(cessation_date), toNull(tenure_years)]
         );
         const [rows] = await pool.query('SELECT * FROM directors WHERE id = ?', [result.insertId]);
         res.status(201).json({ success: true, data: rows[0] });

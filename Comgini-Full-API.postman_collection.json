@@ -227,7 +227,7 @@
 						"header": [{ "key": "Content-Type", "value": "application/json" }],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"Acme Corp\",\n    \"email\": \"contact@acme.com\",\n    \"phone\": \"9876543210\",\n    \"company_name\": \"Acme Corporation Pvt Ltd\",\n    \"cin\": \"U12345MH2020PTC123456\",\n    \"pan\": \"AAACA1234A\",\n    \"gstin\": \"27AAACA1234A1Z5\",\n    \"address\": \"123 Business Park, Mumbai\",\n    \"city\": \"Mumbai\",\n    \"state\": \"Maharashtra\",\n    \"pincode\": \"400001\",\n    \"client_group\": \"Corporate\",\n    \"risk_score\": \"low\"\n}"
+							"raw": "{\n    \"name\": \"Acme Corp\",\n    \"email\": \"contact@acme.com\",\n    \"phone\": \"9876543210\",\n    \"companyName\": \"Acme Corporation Pvt Ltd\",\n    \"cin\": \"U12345MH2020PTC123456\",\n    \"pan\": \"AAACA1234A\",\n    \"gstin\": \"27AAACA1234A1Z5\",\n    \"address\": \"123 Business Park, Mumbai\",\n    \"city\": \"Mumbai\",\n    \"state\": \"Maharashtra\",\n    \"pinCode\": \"400001\",\n    \"clientGroup\": \"Corporate\",\n    \"riskScore\": \"low\"\n}"
 						},
 						"url": { "raw": "{{baseUrl}}/clients", "host": ["{{baseUrl}}"], "path": ["clients"] }
 					}
@@ -239,7 +239,7 @@
 						"header": [{ "key": "Content-Type", "value": "application/json" }],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"Acme Corp Updated\",\n    \"email\": \"new@acme.com\",\n    \"phone\": \"9876543210\",\n    \"company_name\": \"Acme Corporation Pvt Ltd\",\n    \"cin\": \"U12345MH2020PTC123456\",\n    \"pan\": \"AAACA1234A\",\n    \"gstin\": \"27AAACA1234A1Z5\",\n    \"address\": \"456 New Business Park\",\n    \"city\": \"Mumbai\",\n    \"state\": \"Maharashtra\",\n    \"pincode\": \"400002\",\n    \"client_group\": \"Corporate\",\n    \"risk_score\": \"medium\",\n    \"status\": \"active\"\n}"
+							"raw": "{\n    \"name\": \"Acme Corp Updated\",\n    \"email\": \"new@acme.com\",\n    \"phone\": \"9876543210\",\n    \"companyName\": \"Acme Corporation Pvt Ltd\",\n    \"cin\": \"U12345MH2020PTC123456\",\n    \"pan\": \"AAACA1234A\",\n    \"gstin\": \"27AAACA1234A1Z5\",\n    \"address\": \"456 New Business Park\",\n    \"city\": \"Mumbai\",\n    \"state\": \"Maharashtra\",\n    \"pinCode\": \"400002\",\n    \"clientGroup\": \"Corporate\",\n    \"riskScore\": \"medium\",\n    \"status\": \"active\"\n}"
 						},
 						"url": { "raw": "{{baseUrl}}/clients/{{clientId}}", "host": ["{{baseUrl}}"], "path": ["clients", "{{clientId}}"] }
 					}
@@ -258,7 +258,7 @@
 						"header": [{ "key": "Content-Type", "value": "application/json" }],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"John Doe\",\n    \"designation\": \"CFO\",\n    \"email\": \"john@acme.com\",\n    \"phone\": \"9876543211\",\n    \"is_primary\": true\n}"
+							"raw": "{\n    \"firstName\": \"John\",\n    \"lastName\": \"Doe\",\n    \"email\": \"john@acme.com\",\n    \"phone\": \"9876543211\",\n    \"jobTitle\": \"CFO\",\n    \"skype\": \"john.doe\",\n    \"gender\": \"male\",\n    \"isPrimary\": true\n}"
 						},
 						"url": { "raw": "{{baseUrl}}/clients/{{clientId}}/contacts", "host": ["{{baseUrl}}"], "path": ["clients", "{{clientId}}", "contacts"] }
 					}
@@ -309,7 +309,7 @@
 						"header": [{ "key": "Content-Type", "value": "application/json" }],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"Reliance Industries Ltd\",\n    \"cin\": \"L17110MH1973PLC019786\",\n    \"company_type\": \"company\",\n    \"status\": \"Active\",\n    \"roc\": \"ROC-Mumbai\",\n    \"registration_date\": \"1973-05-08\",\n    \"email\": \"compliance@ril.com\",\n    \"address\": \"3rd Floor, Maker Chambers IV, Nariman Point, Mumbai\",\n    \"authorized_capital\": 1500000000,\n    \"paid_up_capital\": 678000000\n}"
+							"raw": "{\n    \"companyName\": \"24 Moontimes News Private Limited\",\n    \"cinOrLlpin\": \"U74999KA2024PTC123456\",\n    \"companyType\": \"company\",\n    \"status\": \"Active\",\n    \"roc\": \"ROC-Bangalore\",\n    \"registrationDate\": \"2024-03-01\",\n    \"email\": \"client@example.com\",\n    \"address\": \"Some Business Park, Bengaluru\",\n    \"authorizedCapital\": 150000000,\n    \"paidUpCapital\": 100000000\n}"
 						},
 						"url": { "raw": "{{baseUrl}}/masters/companies", "host": ["{{baseUrl}}"], "path": ["masters", "companies"] }
 					}

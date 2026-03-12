@@ -100,10 +100,11 @@ const createTask = async (req, res) => {
 const updateTask = async (req, res) => {
     try {
         const { title, description, client_id, company_id, assigned_to, priority, status, due_date, estimated_hours, actual_hours, category } = req.body;
+        const toNull = (v) => (v === undefined ? null : v);
         const completedAt = status === 'completed' ? new Date() : null;
         await pool.query(
             `UPDATE tasks SET title=?, description=?, client_id=?, company_id=?, assigned_to=?, priority=?, status=?, due_date=?, estimated_hours=?, actual_hours=?, category=?, completed_at=? WHERE id=?`,
-            [title, description, client_id, company_id, assigned_to, priority, status, due_date, estimated_hours, actual_hours, category, completedAt, req.params.id]
+            [title, toNull(description), toNull(client_id), toNull(company_id), toNull(assigned_to), priority, status, toNull(due_date), toNull(estimated_hours), toNull(actual_hours), toNull(category), completedAt, req.params.id]
         );
         const [rows] = await pool.query('SELECT * FROM tasks WHERE id = ?', [req.params.id]);
         res.json({ success: true, data: rows[0] });

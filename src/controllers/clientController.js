@@ -60,14 +60,16 @@ const createClient = async (req, res) => {
             riskScore,
         } = req.body;
 
-        if (!name || typeof name !== 'string' || name.trim().length === 0) {
-            return res.status(400).json({ success: false, message: 'name is required' });
+        const resolvedCompanyName = company_name !== undefined ? company_name : companyName;
+        const finalName = name || resolvedCompanyName;
+
+        if (!finalName || typeof finalName !== 'string' || finalName.trim().length === 0) {
+            return res.status(400).json({ success: false, message: 'name or company_name is required' });
         }
 
         // mysql2 does not allow `undefined` in bind parameters.
         const toNull = (v) => (v === undefined ? null : v);
 
-        const resolvedCompanyName = company_name !== undefined ? company_name : companyName;
         const resolvedPincode = pincode !== undefined ? pincode : pinCode;
         const resolvedClientGroup = client_group !== undefined ? client_group : clientGroup;
         const resolvedRiskScore = (risk_score !== undefined ? risk_score : riskScore) || 'low';
@@ -76,7 +78,7 @@ const createClient = async (req, res) => {
             `INSERT INTO clients (name, email, phone, company_name, cin, pan, gstin, address, city, state, pincode, client_group, risk_score, created_by)
              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
-                name.trim(),
+                finalName.trim(),
                 toNull(email),
                 toNull(phone),
                 toNull(resolvedCompanyName),
@@ -123,13 +125,15 @@ const updateClient = async (req, res) => {
             status,
         } = req.body;
 
-        if (!name || typeof name !== 'string' || name.trim().length === 0) {
-            return res.status(400).json({ success: false, message: 'name is required' });
+        const resolvedCompanyName = company_name !== undefined ? company_name : companyName;
+        const finalName = name || resolvedCompanyName;
+
+        if (!finalName || typeof finalName !== 'string' || finalName.trim().length === 0) {
+            return res.status(400).json({ success: false, message: 'name or company_name is required' });
         }
 
         // mysql2 does not allow `undefined` in bind parameters.
         const toNull = (v) => (v === undefined ? null : v);
-        const resolvedCompanyName = company_name !== undefined ? company_name : companyName;
         const resolvedPincode = pincode !== undefined ? pincode : pinCode;
         const resolvedClientGroup = client_group !== undefined ? client_group : clientGroup;
         const resolvedRiskScore = risk_score !== undefined ? risk_score : riskScore;
@@ -137,7 +141,7 @@ const updateClient = async (req, res) => {
         await pool.query(
             `UPDATE clients SET name=?, email=?, phone=?, company_name=?, cin=?, pan=?, gstin=?, address=?, city=?, state=?, pincode=?, client_group=?, risk_score=?, status=? WHERE id=?`,
             [
-                name.trim(),
+                finalName.trim(),
                 toNull(email),
                 toNull(phone),
                 toNull(resolvedCompanyName),
@@ -252,4 +256,20 @@ const deleteContact = async (req, res) => {
     }
 };
 
-module.exports = { getClients, getClientById, createClient, updateClient, deleteClient, addContact, deleteContact };
+const getPrimaryContacts = async (req, res) => {
+    try {
+        const [rows] = await pool.query(
+            `SELECT cc.*, c.name as client_name, c.company_name
+             FROM client_contacts cc
+             JOIN clients c ON cc.client_id = c.id
+             WHERE cc.is_primary = true
+             ORDER BY cc.created_at DESC`
+        );
+        res.json({ success: true, data: rows });
+    } catch (error) {
+        console.error('Get primary contacts error:', error);
+        res.status(500).json({ success: false, message: 'Failed to fetch primary contacts' });
+    }
+};
+
+module.exports = { getClients, getClientById, createClient, updateClient, deleteClient, addContact, deleteContact, getPrimaryContacts };

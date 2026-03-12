@@ -39,11 +39,11 @@ const getIncorporationById = async (req, res) => {
 
 const createIncorporation = async (req, res) => {
     try {
-        const { form_type, proposed_name_1, proposed_name_2, srn, mca_user, submission_status, approval_date, expiry_date, fee_paid, remarks } = req.body;
+        const { form_type, proposed_name_1, proposed_name_2, purpose, srn, mca_user, submission_status, approval_date, expiry_date, fee_paid, remarks } = req.body;
         const [result] = await pool.query(
-            `INSERT INTO incorporations (form_type, proposed_name_1, proposed_name_2, srn, mca_user, submission_status, approval_date, expiry_date, fee_paid, remarks, created_by)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            [form_type, proposed_name_1, proposed_name_2, srn, mca_user, submission_status || 'draft', approval_date, expiry_date, fee_paid, remarks, req.user.id]
+            `INSERT INTO incorporations (form_type, proposed_name_1, proposed_name_2, purpose, srn, mca_user, submission_status, approval_date, expiry_date, fee_paid, remarks, created_by)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [form_type, proposed_name_1, proposed_name_2, purpose, srn, mca_user, submission_status || 'draft', approval_date, expiry_date, fee_paid, remarks, req.user.id]
         );
         const [rows] = await pool.query('SELECT * FROM incorporations WHERE id = ?', [result.insertId]);
         res.status(201).json({ success: true, data: rows[0] });
@@ -55,10 +55,10 @@ const createIncorporation = async (req, res) => {
 
 const updateIncorporation = async (req, res) => {
     try {
-        const { form_type, proposed_name_1, proposed_name_2, srn, mca_user, submission_status, approval_date, expiry_date, fee_paid, remarks } = req.body;
+        const { form_type, proposed_name_1, proposed_name_2, purpose, srn, mca_user, submission_status, approval_date, expiry_date, fee_paid, remarks } = req.body;
         await pool.query(
-            `UPDATE incorporations SET form_type=?, proposed_name_1=?, proposed_name_2=?, srn=?, mca_user=?, submission_status=?, approval_date=?, expiry_date=?, fee_paid=?, remarks=? WHERE id=?`,
-            [form_type, proposed_name_1, proposed_name_2, srn, mca_user, submission_status, approval_date, expiry_date, fee_paid, remarks, req.params.id]
+            `UPDATE incorporations SET form_type=?, proposed_name_1=?, proposed_name_2=?, purpose=?, srn=?, mca_user=?, submission_status=?, approval_date=?, expiry_date=?, fee_paid=?, remarks=? WHERE id=?`,
+            [form_type, proposed_name_1, proposed_name_2, purpose, srn, mca_user, submission_status, approval_date, expiry_date, fee_paid, remarks, req.params.id]
         );
         const [rows] = await pool.query('SELECT * FROM incorporations WHERE id = ?', [req.params.id]);
         res.json({ success: true, data: rows[0] });

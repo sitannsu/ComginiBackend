@@ -49,16 +49,17 @@ const createInvoice = async (req, res) => {
     const conn = await pool.getConnection();
     try {
         const { invoice_number, client_id, company_id, issue_date, due_date, subtotal, tax_amount, total_amount, notes, items } = req.body;
+        const toNull = (v) => (v === undefined ? null : v);
         const [result] = await conn.query(
             `INSERT INTO invoices (invoice_number, client_id, company_id, issue_date, due_date, subtotal, tax_amount, total_amount, notes, created_by)
              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            [invoice_number, client_id, company_id, issue_date, due_date, subtotal, tax_amount || 0, total_amount, notes, req.user.id]
+            [toNull(invoice_number), toNull(client_id), toNull(company_id), toNull(issue_date), toNull(due_date), toNull(subtotal), toNull(tax_amount) || 0, toNull(total_amount), toNull(notes), toNull(req.user?.id)]
         );
         if (items && items.length > 0) {
             for (const item of items) {
                 await conn.query(
                     'INSERT INTO invoice_items (invoice_id, description, quantity, rate, amount) VALUES (?, ?, ?, ?, ?)',
-                    [result.insertId, item.description, item.quantity || 1, item.rate, item.amount]
+                    [result.insertId, toNull(item.description), toNull(item.quantity) || 1, toNull(item.rate), toNull(item.amount)]
                 );
             }
         }
@@ -76,9 +77,10 @@ const createInvoice = async (req, res) => {
 const updateInvoice = async (req, res) => {
     try {
         const { payment_status, payment_date, notes } = req.body;
+        const toNull = (v) => (v === undefined ? null : v);
         await pool.query(
             'UPDATE invoices SET payment_status=?, payment_date=?, notes=? WHERE id=?',
-            [payment_status, payment_date, notes, req.params.id]
+            [toNull(payment_status), toNull(payment_date), toNull(notes), req.params.id]
         );
         const [rows] = await pool.query('SELECT * FROM invoices WHERE id = ?', [req.params.id]);
         res.json({ success: true, data: rows[0] });
@@ -127,9 +129,10 @@ const getExpenses = async (req, res) => {
 const createExpense = async (req, res) => {
     try {
         const { category, description, amount, expense_date, receipt_url, payment_mode } = req.body;
+        const toNull = (v) => (v === undefined ? null : v);
         const [result] = await pool.query(
             'INSERT INTO expenses (category, description, amount, expense_date, receipt_url, payment_mode, created_by) VALUES (?, ?, ?, ?, ?, ?, ?)',
-            [category, description, amount, expense_date, receipt_url, payment_mode || 'cash', req.user.id]
+            [toNull(category), toNull(description), toNull(amount), toNull(expense_date), toNull(receipt_url), payment_mode || 'cash', req.user.id]
         );
         const [rows] = await pool.query('SELECT * FROM expenses WHERE id = ?', [result.insertId]);
         res.status(201).json({ success: true, data: rows[0] });
@@ -142,9 +145,10 @@ const createExpense = async (req, res) => {
 const updateExpense = async (req, res) => {
     try {
         const { category, description, amount, expense_date, receipt_url, payment_mode } = req.body;
+        const toNull = (v) => (v === undefined ? null : v);
         await pool.query(
             'UPDATE expenses SET category=?, description=?, amount=?, expense_date=?, receipt_url=?, payment_mode=? WHERE id=?',
-            [category, description, amount, expense_date, receipt_url, payment_mode, req.params.id]
+            [toNull(category), toNull(description), toNull(amount), toNull(expense_date), toNull(receipt_url), toNull(payment_mode), req.params.id]
         );
         const [rows] = await pool.query('SELECT * FROM expenses WHERE id = ?', [req.params.id]);
         res.json({ success: true, data: rows[0] });
