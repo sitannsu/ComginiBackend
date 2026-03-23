@@ -9,6 +9,7 @@ router.use(authenticateToken);
 router.get('/', tc.getTasks);
 router.get('/:id', tc.getTaskById);
 router.post('/', tc.createTask);
+router.patch('/:id/star', tc.toggleTaskStar);
 router.put('/:id', tc.updateTask);
 router.delete('/:id', tc.deleteTask);
 

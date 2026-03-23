@@ -2,9 +2,18 @@ const pool = require('../config/database');
 
 // ---- TASKS ----
 
+const toNull = (v) => (v === undefined ? null : v);
+const normalizeJsonArray = (v) => {
+    if (v === undefined) return undefined;
+    if (v === null || v === '') return null;
+    if (Array.isArray(v)) return JSON.stringify(v);
+    if (typeof v === 'string') return v;
+    return JSON.stringify(v);
+};
+
 const getTasks = async (req, res) => {
     try {
-        const { status, priority, assigned_to, client_id, company_id, search, page = 1, limit = 20 } = req.query;
+        const { status, priority, assigned_to, client_id, company_id, is_starred, search, page = 1, limit = 20 } = req.query;
         const offset = (parseInt(page) - 1) * parseInt(limit);
         let where = '1=1';
         const params = [];
@@ -13,6 +22,7 @@ const getTasks = async (req, res) => {
         if (assigned_to) { where += ' AND t.assigned_to = ?'; params.push(assigned_to); }
         if (client_id) { where += ' AND t.client_id = ?'; params.push(client_id); }
         if (company_id) { where += ' AND t.company_id = ?'; params.push(company_id); }
+        if (is_starred !== undefined) { where += ' AND t.is_starred = ?'; params.push(is_starred === 'true' || is_starred === '1' ? 1 : 0); }
         if (search) { where += ' AND (t.title LIKE ? OR t.description LIKE ?)'; params.push(`%${search}%`, `%${search}%`); }
 
         const [rows] = await pool.query(
@@ -65,16 +75,32 @@ const getTaskById = async (req, res) => {
 
 const createTask = async (req, res) => {
     try {
-        const { title, description, client_id, company_id, assigned_to, priority, status, due_date, estimated_hours, category } = req.body;
+        const {
+            title,
+            description,
+            client_id,
+            company_id,
+            assigned_to,
+            priority,
+            status,
+            is_starred,
+            collaborators,
+            approver,
+            labels,
+            start_date,
+            due_date,
+            recurring,
+            estimated_hours,
+            category,
+        } = req.body;
         if (!title || typeof title !== 'string' || title.trim().length === 0) {
             return res.status(400).json({ success: false, message: 'title is required' });
         }
 
-        // mysql2 does not allow `undefined` in bind parameters.
-        const toNull = (v) => (v === undefined ? null : v);
         const [result] = await pool.query(
-            `INSERT INTO tasks (title, description, client_id, company_id, assigned_to, assigned_by, priority, status, due_date, estimated_hours, category)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            `INSERT INTO tasks
+            (title, description, client_id, company_id, assigned_to, assigned_by, priority, status, is_starred, collaborators, approver, labels, start_date, due_date, recurring, estimated_hours, category)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
                 title.trim(),
                 toNull(description),
@@ -84,7 +110,13 @@ const createTask = async (req, res) => {
                 toNull(req.user?.id),
                 priority || 'medium',
                 status || 'todo',
+                is_starred ? 1 : 0,
+                normalizeJsonArray(collaborators),
+                toNull(approver),
+                normalizeJsonArray(labels),
+                toNull(start_date),
                 toNull(due_date),
+                recurring ? 1 : 0,
                 toNull(estimated_hours),
                 toNull(category),
             ]
@@ -99,18 +131,70 @@ const createTask = async (req, res) => {
 
 const updateTask = async (req, res) => {
     try {
-        const { title, description, client_id, company_id, assigned_to, priority, status, due_date, estimated_hours, actual_hours, category } = req.body;
-        const toNull = (v) => (v === undefined ? null : v);
-        const completedAt = status === 'completed' ? new Date() : null;
-        await pool.query(
-            `UPDATE tasks SET title=?, description=?, client_id=?, company_id=?, assigned_to=?, priority=?, status=?, due_date=?, estimated_hours=?, actual_hours=?, category=?, completed_at=? WHERE id=?`,
-            [title, toNull(description), toNull(client_id), toNull(company_id), toNull(assigned_to), priority, status, toNull(due_date), toNull(estimated_hours), toNull(actual_hours), toNull(category), completedAt, req.params.id]
-        );
+        const allowedFields = [
+            'title', 'description', 'client_id', 'company_id', 'assigned_to',
+            'priority', 'status', 'is_starred', 'collaborators', 'approver',
+            'labels', 'start_date', 'due_date', 'recurring', 'estimated_hours',
+            'actual_hours', 'category'
+        ];
+
+        const setParts = [];
+        const values = [];
+
+        for (const field of allowedFields) {
+            if (Object.prototype.hasOwnProperty.call(req.body, field)) {
+                let value = req.body[field];
+                if (field === 'title') {
+                    if (!value || typeof value !== 'string' || value.trim().length === 0) {
+                        return res.status(400).json({ success: false, message: 'title cannot be empty' });
+                    }
+                    value = value.trim();
+                }
+                if (field === 'collaborators' || field === 'labels') {
+                    value = normalizeJsonArray(value);
+                } else if (field === 'is_starred' || field === 'recurring') {
+                    value = value ? 1 : 0;
+                } else {
+                    value = toNull(value);
+                }
+                setParts.push(`${field} = ?`);
+                values.push(value);
+            }
+        }
+
+        if (Object.prototype.hasOwnProperty.call(req.body, 'status')) {
+            const completedAt = req.body.status === 'completed' ? new Date() : null;
+            setParts.push('completed_at = ?');
+            values.push(completedAt);
+        }
+
+        if (setParts.length === 0) {
+            return res.status(400).json({ success: false, message: 'No updatable fields provided' });
+        }
+
+        values.push(req.params.id);
+        await pool.query(`UPDATE tasks SET ${setParts.join(', ')} WHERE id = ?`, values);
         const [rows] = await pool.query('SELECT * FROM tasks WHERE id = ?', [req.params.id]);
+        if (rows.length === 0) return res.status(404).json({ success: false, message: 'Task not found' });
         res.json({ success: true, data: rows[0] });
     } catch (error) {
         console.error('Update task error:', error);
         res.status(500).json({ success: false, message: 'Failed to update task' });
+    }
+};
+
+const toggleTaskStar = async (req, res) => {
+    try {
+        const [rows] = await pool.query('SELECT id, is_starred FROM tasks WHERE id = ?', [req.params.id]);
+        if (rows.length === 0) return res.status(404).json({ success: false, message: 'Task not found' });
+        const current = rows[0].is_starred ? 1 : 0;
+        const next = current ? 0 : 1;
+        await pool.query('UPDATE tasks SET is_starred = ? WHERE id = ?', [next, req.params.id]);
+        const [updatedRows] = await pool.query('SELECT * FROM tasks WHERE id = ?', [req.params.id]);
+        res.json({ success: true, data: updatedRows[0] });
+    } catch (error) {
+        console.error('Toggle task star error:', error);
+        res.status(500).json({ success: false, message: 'Failed to toggle task star' });
     }
 };
 
@@ -245,7 +329,7 @@ const getTimesheets = async (req, res) => {
 };
 
 module.exports = {
-    getTasks, getTaskById, createTask, updateTask, deleteTask,
+    getTasks, getTaskById, createTask, updateTask, toggleTaskStar, deleteTask,
     addComment, startTimer, stopTimer,
     getCallLogs, createCallLog, getTimesheets
 };

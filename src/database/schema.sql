@@ -236,6 +236,12 @@ CREATE TABLE IF NOT EXISTS tasks (
     assigned_by INT,
     priority ENUM('low','medium','high','urgent') DEFAULT 'medium',
     status ENUM('todo','in_progress','review','completed','cancelled') DEFAULT 'todo',
+    is_starred BOOLEAN DEFAULT false,
+    collaborators JSON,
+    approver INT,
+    labels JSON,
+    start_date DATE,
+    recurring BOOLEAN DEFAULT false,
     due_date DATE,
     estimated_hours DECIMAL(5,2),
     actual_hours DECIMAL(5,2),
@@ -246,7 +252,8 @@ CREATE TABLE IF NOT EXISTS tasks (
     FOREIGN KEY (client_id) REFERENCES clients(id) ON DELETE SET NULL,
     FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE SET NULL,
     FOREIGN KEY (assigned_to) REFERENCES users(id) ON DELETE SET NULL,
-    FOREIGN KEY (assigned_by) REFERENCES users(id) ON DELETE SET NULL
+    FOREIGN KEY (assigned_by) REFERENCES users(id) ON DELETE SET NULL,
+    FOREIGN KEY (approver) REFERENCES users(id) ON DELETE SET NULL
 );
 
 CREATE TABLE IF NOT EXISTS task_comments (
