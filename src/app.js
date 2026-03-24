@@ -20,6 +20,8 @@ const supportRoutes = require('./routes/supportRoutes');
 const secretarialRoutes = require('./routes/secretarialRoutes');
 const mcaRoutes = require('./routes/mcaRoutes');
 const efilingRoutes = require('./routes/efilingRoutes');
+const entityRoutes = require('./routes/entityRoutes');
+const mastersExtraRoutes = require('./routes/mastersExtraRoutes');
 const { generalLimiter } = require('./middleware/rateLimiter');
 
 const app = express();
@@ -74,6 +76,8 @@ app.use(`${v1}/support`, supportRoutes);
 app.use(`${v1}/secretarial`, secretarialRoutes);
 app.use(`${v1}/mca`, mcaRoutes);
 app.use(`${v1}/efiling`, efilingRoutes);
+app.use(v1, entityRoutes);
+app.use(v1, mastersExtraRoutes);
 
 // 404 handler
 app.use((req, res) => {

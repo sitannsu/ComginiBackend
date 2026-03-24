@@ -7,6 +7,7 @@ router.use(authenticateToken);
 
 // Companies
 router.get('/companies', mc.getCompanies);
+router.get('/companies/mca', mc.searchMCACompanies);
 router.get('/companies/:id', mc.getCompanyById);
 router.post('/companies', mc.createCompany);
 router.put('/companies/:id', mc.updateCompany);
@@ -29,5 +30,13 @@ router.get('/pcs-firms', mc.getPCSFirms);
 router.post('/pcs-firms', mc.createPCSFirm);
 router.put('/pcs-firms/:id', mc.updatePCSFirm);
 router.delete('/pcs-firms/:id', mc.deletePCSFirm);
+
+// Shareholder Master
+router.post('/shareholders', mc.createShareholder);
+router.get('/shareholders', mc.getShareholders);
+
+// Debenture Holder Master
+router.post('/debenture-holders', mc.createDebentureHolder);
+router.get('/debenture-holders', mc.getDebentureHolders);
 
 module.exports = router;

@@ -1,4 +1,5 @@
 const pool = require('../config/database');
+const toNull = (v) => (v === undefined ? null : v);
 
 // ---- COMPANIES ----
 
@@ -59,9 +60,6 @@ const createCompany = async (req, res) => {
         if (!resolvedName || typeof resolvedName !== 'string' || resolvedName.trim().length === 0) {
             return res.status(400).json({ success: false, message: 'name is required' });
         }
-
-        // mysql2 does not allow `undefined` in bind parameters.
-        const toNull = (v) => (v === undefined ? null : v);
 
         // UI provides one field: cinOrLlpin
         const cinValue = cin !== undefined ? cin : cinOrLlpin;
@@ -284,9 +282,145 @@ const deletePCSFirm = async (req, res) => {
     }
 };
 
+const searchMCACompanies = async (req, res) => {
+    try {
+        const { search = '', limit = 20 } = req.query;
+        const term = `%${String(search).trim()}%`;
+        const [rows] = await pool.query(
+            `SELECT id, name as company_name, cin, llpin, company_type, status
+             FROM companies
+             WHERE (? = '%%' OR name LIKE ? OR cin LIKE ? OR llpin LIKE ?)
+             ORDER BY name
+             LIMIT ?`,
+            [term, term, term, term, parseInt(limit, 10)]
+        );
+        res.json({ success: true, data: rows });
+    } catch (error) {
+        console.error('Search MCA companies error:', error);
+        res.status(500).json({ success: false, message: 'Failed to search MCA companies' });
+    }
+};
+
+// ---- SHAREHOLDERS ----
+const createShareholder = async (req, res) => {
+    try {
+        const {
+            company_id, full_name, father_name, category, sub_category, under_sub_category,
+            cin_llpin, registration_no, incorporation_date, pan, email, mobile, address_line1,
+            country, state, city, pincode, aadhaar, nationality, marital_status, spouse_name,
+            occupation, guardian_name, documents
+        } = req.body;
+
+        if (!full_name || !String(full_name).trim()) {
+            return res.status(400).json({ success: false, message: 'full_name is required' });
+        }
+
+        const [result] = await pool.query(
+            `INSERT INTO shareholders
+            (company_id, full_name, father_name, category, sub_category, under_sub_category, cin_llpin, registration_no, incorporation_date,
+             pan, email, mobile, address_line1, country, state, city, pincode, aadhaar, nationality, marital_status, spouse_name,
+             occupation, guardian_name, documents)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [
+                toNull(company_id), String(full_name).trim(), toNull(father_name), toNull(category), toNull(sub_category),
+                toNull(under_sub_category), toNull(cin_llpin), toNull(registration_no), toNull(incorporation_date), toNull(pan),
+                toNull(email), toNull(mobile), toNull(address_line1), toNull(country), toNull(state), toNull(city), toNull(pincode),
+                toNull(aadhaar), toNull(nationality), toNull(marital_status), toNull(spouse_name), toNull(occupation),
+                toNull(guardian_name), documents === undefined ? null : JSON.stringify(documents)
+            ]
+        );
+        const [rows] = await pool.query('SELECT * FROM shareholders WHERE id = ?', [result.insertId]);
+        res.status(201).json({ success: true, data: rows[0] });
+    } catch (error) {
+        console.error('Create shareholder error:', error);
+        res.status(500).json({ success: false, message: 'Failed to create shareholder' });
+    }
+};
+
+const getShareholders = async (req, res) => {
+    try {
+        const { company_id, page = 1, limit = 20 } = req.query;
+        const offset = (parseInt(page, 10) - 1) * parseInt(limit, 10);
+        const where = company_id ? 'WHERE s.company_id = ?' : '';
+        const params = company_id ? [company_id] : [];
+        const [rows] = await pool.query(
+            `SELECT s.*, c.name as company_name
+             FROM shareholders s
+             LEFT JOIN companies c ON s.company_id = c.id
+             ${where}
+             ORDER BY s.created_at DESC
+             LIMIT ? OFFSET ?`,
+            [...params, parseInt(limit, 10), offset]
+        );
+        res.json({ success: true, data: rows });
+    } catch (error) {
+        console.error('Get shareholders error:', error);
+        res.status(500).json({ success: false, message: 'Failed to fetch shareholders' });
+    }
+};
+
+// ---- DEBENTURE HOLDERS ----
+const createDebentureHolder = async (req, res) => {
+    try {
+        const {
+            company_id, full_name, father_name, category, sub_category, under_sub_category,
+            address_line1, country, state, city, pincode, gender, pan, dob, aadhaar, nationality,
+            voter_id, email, mobile, marital_status, spouse_name, occupation, guardian_name,
+            cin_registration_no, incorporation_date, documents
+        } = req.body;
+
+        if (!full_name || !String(full_name).trim()) {
+            return res.status(400).json({ success: false, message: 'full_name is required' });
+        }
+
+        const [result] = await pool.query(
+            `INSERT INTO debenture_holders
+            (company_id, full_name, father_name, category, sub_category, under_sub_category, address_line1, country, state, city, pincode,
+             gender, pan, dob, aadhaar, nationality, voter_id, email, mobile, marital_status, spouse_name, occupation, guardian_name,
+             cin_registration_no, incorporation_date, documents)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [
+                toNull(company_id), String(full_name).trim(), toNull(father_name), toNull(category), toNull(sub_category),
+                toNull(under_sub_category), toNull(address_line1), toNull(country), toNull(state), toNull(city), toNull(pincode),
+                toNull(gender), toNull(pan), toNull(dob), toNull(aadhaar), toNull(nationality), toNull(voter_id), toNull(email),
+                toNull(mobile), toNull(marital_status), toNull(spouse_name), toNull(occupation), toNull(guardian_name),
+                toNull(cin_registration_no), toNull(incorporation_date), documents === undefined ? null : JSON.stringify(documents)
+            ]
+        );
+        const [rows] = await pool.query('SELECT * FROM debenture_holders WHERE id = ?', [result.insertId]);
+        res.status(201).json({ success: true, data: rows[0] });
+    } catch (error) {
+        console.error('Create debenture holder error:', error);
+        res.status(500).json({ success: false, message: 'Failed to create debenture holder' });
+    }
+};
+
+const getDebentureHolders = async (req, res) => {
+    try {
+        const { company_id, page = 1, limit = 20 } = req.query;
+        const offset = (parseInt(page, 10) - 1) * parseInt(limit, 10);
+        const where = company_id ? 'WHERE d.company_id = ?' : '';
+        const params = company_id ? [company_id] : [];
+        const [rows] = await pool.query(
+            `SELECT d.*, c.name as company_name
+             FROM debenture_holders d
+             LEFT JOIN companies c ON d.company_id = c.id
+             ${where}
+             ORDER BY d.created_at DESC
+             LIMIT ? OFFSET ?`,
+            [...params, parseInt(limit, 10), offset]
+        );
+        res.json({ success: true, data: rows });
+    } catch (error) {
+        console.error('Get debenture holders error:', error);
+        res.status(500).json({ success: false, message: 'Failed to fetch debenture holders' });
+    }
+};
+
 module.exports = {
     getCompanies, getCompanyById, createCompany, updateCompany, deleteCompany,
     getDirectors, createDirector, updateDirector,
     getRTAs, createRTA, updateRTA, deleteRTA, linkCompanyRTA,
-    getPCSFirms, createPCSFirm, updatePCSFirm, deletePCSFirm
+    getPCSFirms, createPCSFirm, updatePCSFirm, deletePCSFirm,
+    searchMCACompanies, createShareholder, getShareholders, createDebentureHolder, getDebentureHolders
 };
