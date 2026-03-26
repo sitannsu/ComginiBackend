@@ -2,21 +2,39 @@ const pool = require('../config/database');
 
 const getIncorporations = async (req, res) => {
     try {
-        const { form_type, status, page = 1, limit = 20 } = req.query;
+        const { type, form_type, status, page = 1, limit = 20 } = req.query;
         const offset = (parseInt(page) - 1) * parseInt(limit);
         let where = '1=1';
         const params = [];
-        if (form_type) { where += ' AND i.form_type = ?'; params.push(form_type); }
+
+        // Support both 'type' (user request) and 'form_type' (existing code)
+        const resolvedType = type || form_type;
+        if (resolvedType) { where += ' AND i.form_type = ?'; params.push(resolvedType); }
         if (status) { where += ' AND i.submission_status = ?'; params.push(status); }
 
         const [rows] = await pool.query(
-            `SELECT i.*, u.first_name as created_by_name
+            `SELECT i.*, u.first_name as mca_user_name
              FROM incorporations i LEFT JOIN users u ON i.created_by = u.id
              WHERE ${where} ORDER BY i.created_at DESC LIMIT ? OFFSET ?`,
             [...params, parseInt(limit), offset]
         );
         const [[{ total }]] = await pool.query(`SELECT COUNT(*) as total FROM incorporations i WHERE ${where}`, params);
-        res.json({ success: true, data: rows, pagination: { page: parseInt(page), limit: parseInt(limit), total } });
+        
+        const mappedData = rows.map(row => ({
+            id: row.id,
+            llpName: row.proposed_name_1,
+            purpose: row.purpose,
+            srn: row.srn,
+            mcaUser: row.mca_user,
+            lastSubmitted: row.updated_at.toISOString().split('T')[0]
+        }));
+
+        res.json({ 
+            success: true, 
+            message: 'Data fetched successfully',
+            data: mappedData, 
+            pagination: { page: parseInt(page), limit: parseInt(limit), total } 
+        });
     } catch (error) {
         console.error('Get incorporations error:', error);
         res.status(500).json({ success: false, message: 'Failed to fetch incorporations' });

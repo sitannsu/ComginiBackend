@@ -22,6 +22,11 @@ const mcaRoutes = require('./routes/mcaRoutes');
 const efilingRoutes = require('./routes/efilingRoutes');
 const entityRoutes = require('./routes/entityRoutes');
 const mastersExtraRoutes = require('./routes/mastersExtraRoutes');
+const checklistRoutes = require('./routes/checklistRoutes');
+const assignmentRoutes = require('./routes/assignmentRoutes');
+const timesheetRoutes = require('./routes/timesheetRoutes');
+const ac = require('./controllers/assignmentController');
+const cc = require('./controllers/checklistController');
 const { generalLimiter } = require('./middleware/rateLimiter');
 
 const app = express();
@@ -78,6 +83,19 @@ app.use(`${v1}/mca`, mcaRoutes);
 app.use(`${v1}/efiling`, efilingRoutes);
 app.use(v1, entityRoutes);
 app.use(v1, mastersExtraRoutes);
+
+// New requested routes
+app.use('/api/forms', incorporationRoutes);
+app.use('/api/company', mcaRoutes);
+app.use('/api/checklists', checklistRoutes);
+app.use('/api/assignments', assignmentRoutes);
+app.use('/api/timesheets', timesheetRoutes);
+
+const { authenticateToken } = require('./middleware/auth');
+
+// Dropdown APIs
+app.get('/api/users', authenticateToken, ac.getUsers);
+app.get('/api/companies', authenticateToken, ac.getCompanies);
 
 // 404 handler
 app.use((req, res) => {

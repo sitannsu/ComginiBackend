@@ -8,5 +8,6 @@ router.use(authenticateToken);
 router.get('/downloads', mc.getDownloads);
 router.post('/downloads', mc.requestDownload);
 router.put('/downloads/:id', mc.updateDownloadStatus);
+router.get('/search', mc.searchCompany);
 
 module.exports = router;

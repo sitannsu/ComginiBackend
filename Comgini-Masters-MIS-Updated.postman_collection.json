@@ -1,0 +1,258 @@
+{
+  "info": {
+    "_postman_id": "comgini-masters-mis-updated-v1",
+    "name": "Comgini Masters + MIS Updated APIs",
+    "description": "Auditor Master, Client Groups, MIS Report, Companies search/dropdown APIs.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://13.126.81.144:3000/api/v1" },
+    { "key": "token", "value": "" },
+    { "key": "companyId", "value": "1" }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }]
+  },
+  "item": [
+    {
+      "name": "1. Auditor Master",
+      "item": [
+        {
+          "name": "Add Auditor",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"company_id\": 1,\n  \"category\": \"statutory\",\n  \"firm_registration_number\": \"FRN12345\",\n  \"firm_name\": \"ABC & Co\",\n  \"pan\": \"ABCDE1234F\",\n  \"firm_email\": \"firm@abc.com\",\n  \"address\": \"123 Business Street\",\n  \"country\": \"India\",\n  \"state\": \"Karnataka\",\n  \"city\": \"Bengaluru\",\n  \"membership_number\": \"M123456\",\n  \"auditor_name\": \"John Doe\",\n  \"mobile\": \"9876543210\",\n  \"email\": \"john@example.com\",\n  \"designation\": \"Partner\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auditors",
+              "host": ["{{baseUrl}}"],
+              "path": ["auditors"]
+            }
+          }
+        },
+        {
+          "name": "Get Auditors - Statutory",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/auditors?category=statutory&page=1&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["auditors"],
+              "query": [
+                { "key": "category", "value": "statutory" },
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "20" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Auditors - Secretarial",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/auditors?category=secretarial&page=1&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["auditors"],
+              "query": [
+                { "key": "category", "value": "secretarial" },
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "20" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Auditors - Cost",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/auditors?category=cost&page=1&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["auditors"],
+              "query": [
+                { "key": "category", "value": "cost" },
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "20" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Auditors - Internal",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/auditors?category=internal&page=1&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["auditors"],
+              "query": [
+                { "key": "category", "value": "internal" },
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "20" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Company-wise Auditors",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/auditors/company-wise?company_id={{companyId}}&page=1&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["auditors", "company-wise"],
+              "query": [
+                { "key": "company_id", "value": "{{companyId}}" },
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "20" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Upload ADT-1",
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "auditor_id", "value": "1", "type": "text" },
+                { "key": "file_v2", "type": "file", "src": "" },
+                { "key": "file_v3", "type": "file", "src": "" }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auditors/adt1-upload",
+              "host": ["{{baseUrl}}"],
+              "path": ["auditors", "adt1-upload"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Client Groups",
+      "item": [
+        {
+          "name": "Add Client Group",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Corporate Group A\",\n  \"contact_name\": \"Ravi Kumar\",\n  \"contact_no\": \"9876543210\",\n  \"email\": \"groupa@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/client-groups",
+              "host": ["{{baseUrl}}"],
+              "path": ["client-groups"]
+            }
+          }
+        },
+        {
+          "name": "Get Client Groups",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/client-groups?page=1&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["client-groups"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "20" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. MIS Report",
+      "item": [
+        {
+          "name": "Get Companies (Dropdown)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/companies?page=1&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["companies"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "20" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Search MCA Companies",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/companies/mca?search=ABC&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["companies", "mca"],
+              "query": [
+                { "key": "search", "value": "ABC" },
+                { "key": "limit", "value": "20" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Generate MIS Report",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"company_id\": {{companyId}},\n  \"date\": \"2026-03-24\",\n  \"type\": \"company\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/mis-report/generate",
+              "host": ["{{baseUrl}}"],
+              "path": ["mis-report", "generate"]
+            }
+          }
+        },
+        {
+          "name": "MIS Report History",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/mis-report/history?company_id={{companyId}}&page=1&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["mis-report", "history"],
+              "query": [
+                { "key": "company_id", "value": "{{companyId}}" },
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "20" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Existing Helpful APIs",
+      "item": [
+        {
+          "name": "Primary Contacts",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/clients/primary-contacts",
+              "host": ["{{baseUrl}}"],
+              "path": ["clients", "primary-contacts"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

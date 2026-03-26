@@ -58,4 +58,19 @@ const updateDownloadStatus = async (req, res) => {
     }
 };
 
-module.exports = { getDownloads, requestDownload, updateDownloadStatus };
+const searchCompany = async (req, res) => {
+    try {
+        const { query = '' } = req.query;
+        const term = `%${String(query).trim()}%`;
+        const [rows] = await pool.query(
+            `SELECT id, name FROM companies WHERE (name LIKE ? OR cin LIKE ? OR llpin LIKE ?) ORDER BY name LIMIT 10`,
+            [term, term, term]
+        );
+        res.json({ success: true, message: 'Data fetched successfully', data: rows });
+    } catch (error) {
+        console.error('Search company error:', error);
+        res.status(500).json({ success: false, message: 'Failed to search company' });
+    }
+};
+
+module.exports = { getDownloads, requestDownload, updateDownloadStatus, searchCompany };
