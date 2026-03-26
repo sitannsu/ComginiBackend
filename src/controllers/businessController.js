@@ -83,4 +83,175 @@ const getExpiringItems = async (req, res) => {
     }
 };
 
-module.exports = { getRegistrations, createRegistration, updateRegistration, deleteRegistration, getExpiringItems };
+const getInsurance = async (req, res) => {
+    try {
+        const { page = 1, limit = 20 } = req.query;
+        const offset = (parseInt(page, 10) - 1) * parseInt(limit, 10);
+        const [rows] = await pool.query(
+            `SELECT bi.*, c.name as company_name
+             FROM business_insurance bi
+             LEFT JOIN companies c ON bi.company_id = c.id
+             ORDER BY bi.created_at DESC
+             LIMIT ? OFFSET ?`,
+            [parseInt(limit, 10), offset]
+        );
+        res.json({ success: true, message: 'Success', data: rows });
+    } catch (error) {
+        console.error('Get insurance error:', error);
+        res.status(500).json({ success: false, message: 'Failed to fetch insurance' });
+    }
+};
+
+const createInsurance = async (req, res) => {
+    try {
+        const {
+            company_id, insurance_company, broker_name, policy_type, policy_number, sum_insured,
+            policy_commencement_date, renewal_date, start_from, expiry_date, amount_paid, mode_of_payment,
+            asset_insured, payment_date, key_terms, alert_user, alert_before, remarks
+        } = req.body;
+        const [result] = await pool.query(
+            `INSERT INTO business_insurance
+            (company_id, insurance_company, broker_name, policy_type, policy_number, sum_insured, policy_commencement_date, renewal_date, start_from, expiry_date, amount_paid, mode_of_payment, asset_insured, payment_date, key_terms, alert_user, alert_before, remarks)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [company_id, insurance_company, broker_name, policy_type, policy_number, sum_insured, policy_commencement_date, renewal_date, start_from, expiry_date, amount_paid, mode_of_payment, asset_insured, payment_date, key_terms, alert_user, alert_before, remarks]
+        );
+        const [rows] = await pool.query('SELECT * FROM business_insurance WHERE id = ?', [result.insertId]);
+        res.status(201).json({ success: true, message: 'Success', data: rows[0] });
+    } catch (error) {
+        console.error('Create insurance error:', error);
+        res.status(500).json({ success: false, message: 'Failed to create insurance' });
+    }
+};
+
+const updateInsurance = async (req, res) => {
+    try {
+        const {
+            company_id, insurance_company, broker_name, policy_type, policy_number, sum_insured,
+            policy_commencement_date, renewal_date, start_from, expiry_date, amount_paid, mode_of_payment,
+            asset_insured, payment_date, key_terms, alert_user, alert_before, remarks
+        } = req.body;
+        await pool.query(
+            `UPDATE business_insurance SET company_id=?, insurance_company=?, broker_name=?, policy_type=?, policy_number=?, sum_insured=?, policy_commencement_date=?, renewal_date=?, start_from=?, expiry_date=?, amount_paid=?, mode_of_payment=?, asset_insured=?, payment_date=?, key_terms=?, alert_user=?, alert_before=?, remarks=? WHERE id=?`,
+            [company_id, insurance_company, broker_name, policy_type, policy_number, sum_insured, policy_commencement_date, renewal_date, start_from, expiry_date, amount_paid, mode_of_payment, asset_insured, payment_date, key_terms, alert_user, alert_before, remarks, req.params.id]
+        );
+        const [rows] = await pool.query('SELECT * FROM business_insurance WHERE id = ?', [req.params.id]);
+        res.json({ success: true, message: 'Success', data: rows[0] });
+    } catch (error) {
+        console.error('Update insurance error:', error);
+        res.status(500).json({ success: false, message: 'Failed to update insurance' });
+    }
+};
+
+const deleteInsurance = async (req, res) => {
+    try {
+        await pool.query('DELETE FROM business_insurance WHERE id = ?', [req.params.id]);
+        res.json({ success: true, message: 'Success', data: [] });
+    } catch (error) {
+        console.error('Delete insurance error:', error);
+        res.status(500).json({ success: false, message: 'Failed to delete insurance' });
+    }
+};
+
+const uploadInsurance = async (req, res) => {
+    try {
+        if (!req.file) return res.status(400).json({ success: false, message: 'file is required' });
+        await pool.query('UPDATE business_insurance SET file_url = ? WHERE id = ?', [`/uploads/business/${req.file.filename}`, req.params.id]);
+        const [rows] = await pool.query('SELECT * FROM business_insurance WHERE id = ?', [req.params.id]);
+        res.json({ success: true, message: 'Success', data: rows[0] });
+    } catch (error) {
+        console.error('Upload insurance error:', error);
+        res.status(500).json({ success: false, message: 'Failed to upload insurance file' });
+    }
+};
+
+const getContracts = async (req, res) => {
+    try {
+        const { page = 1, limit = 20 } = req.query;
+        const offset = (parseInt(page, 10) - 1) * parseInt(limit, 10);
+        const [rows] = await pool.query(
+            `SELECT bc.*, c.name as company_name
+             FROM business_contracts bc
+             LEFT JOIN companies c ON bc.company_id = c.id
+             ORDER BY bc.created_at DESC
+             LIMIT ? OFFSET ?`,
+            [parseInt(limit, 10), offset]
+        );
+        res.json({ success: true, message: 'Success', data: rows });
+    } catch (error) {
+        console.error('Get contracts error:', error);
+        res.status(500).json({ success: false, message: 'Failed to fetch contracts' });
+    }
+};
+
+const createContract = async (req, res) => {
+    try {
+        const {
+            company_id, category, contract_name, contract_value, contract_period, name_of_party,
+            date_of_execution, start_from, expiry_date, key_terms, alert_user, alert_before, remarks
+        } = req.body;
+        const [result] = await pool.query(
+            `INSERT INTO business_contracts
+            (company_id, category, contract_name, contract_value, contract_period, name_of_party, date_of_execution, start_from, expiry_date, key_terms, alert_user, alert_before, remarks)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [company_id, category, contract_name, contract_value, contract_period, name_of_party, date_of_execution, start_from, expiry_date, key_terms, alert_user, alert_before, remarks]
+        );
+        const [rows] = await pool.query('SELECT * FROM business_contracts WHERE id = ?', [result.insertId]);
+        res.status(201).json({ success: true, message: 'Success', data: rows[0] });
+    } catch (error) {
+        console.error('Create contract error:', error);
+        res.status(500).json({ success: false, message: 'Failed to create contract' });
+    }
+};
+
+const updateContract = async (req, res) => {
+    try {
+        const {
+            company_id, category, contract_name, contract_value, contract_period, name_of_party,
+            date_of_execution, start_from, expiry_date, key_terms, alert_user, alert_before, remarks
+        } = req.body;
+        await pool.query(
+            `UPDATE business_contracts SET company_id=?, category=?, contract_name=?, contract_value=?, contract_period=?, name_of_party=?, date_of_execution=?, start_from=?, expiry_date=?, key_terms=?, alert_user=?, alert_before=?, remarks=? WHERE id=?`,
+            [company_id, category, contract_name, contract_value, contract_period, name_of_party, date_of_execution, start_from, expiry_date, key_terms, alert_user, alert_before, remarks, req.params.id]
+        );
+        const [rows] = await pool.query('SELECT * FROM business_contracts WHERE id = ?', [req.params.id]);
+        res.json({ success: true, message: 'Success', data: rows[0] });
+    } catch (error) {
+        console.error('Update contract error:', error);
+        res.status(500).json({ success: false, message: 'Failed to update contract' });
+    }
+};
+
+const deleteContract = async (req, res) => {
+    try {
+        await pool.query('DELETE FROM business_contracts WHERE id = ?', [req.params.id]);
+        res.json({ success: true, message: 'Success', data: [] });
+    } catch (error) {
+        console.error('Delete contract error:', error);
+        res.status(500).json({ success: false, message: 'Failed to delete contract' });
+    }
+};
+
+const uploadContract = async (req, res) => {
+    try {
+        if (!req.file) return res.status(400).json({ success: false, message: 'file is required' });
+        await pool.query('UPDATE business_contracts SET file_url = ? WHERE id = ?', [`/uploads/business/${req.file.filename}`, req.params.id]);
+        const [rows] = await pool.query('SELECT * FROM business_contracts WHERE id = ?', [req.params.id]);
+        res.json({ success: true, message: 'Success', data: rows[0] });
+    } catch (error) {
+        console.error('Upload contract error:', error);
+        res.status(500).json({ success: false, message: 'Failed to upload contract file' });
+    }
+};
+
+// Aliases for UI naming
+const getLicenses = getRegistrations;
+const createLicense = createRegistration;
+const updateLicense = updateRegistration;
+const deleteLicense = deleteRegistration;
+
+module.exports = {
+    getRegistrations, createRegistration, updateRegistration, deleteRegistration, getExpiringItems,
+    getInsurance, createInsurance, updateInsurance, deleteInsurance, uploadInsurance,
+    getContracts, createContract, updateContract, deleteContract, uploadContract,
+    getLicenses, createLicense, updateLicense, deleteLicense
+};

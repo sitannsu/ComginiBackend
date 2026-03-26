@@ -1,0 +1,146 @@
+{
+  "info": {
+    "_postman_id": "comgini-frontend-req-v1",
+    "name": "Comgini Frontend Requirements APIs",
+    "description": "Collection generated from frontend API requirements document.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://13.126.81.144:3000/api/v1" },
+    { "key": "token", "value": "" },
+    { "key": "leadId", "value": "1" },
+    { "key": "taskId", "value": "1" },
+    { "key": "checklistId", "value": "1" },
+    { "key": "assignmentId", "value": "1" },
+    { "key": "leaveId", "value": "1" },
+    { "key": "salaryId", "value": "1" },
+    { "key": "insuranceId", "value": "1" },
+    { "key": "contractId", "value": "1" },
+    { "key": "licenseId", "value": "1" },
+    { "key": "companyId", "value": "1" }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }]
+  },
+  "item": [
+    {
+      "name": "1. Dashboard",
+      "item": [
+        { "name": "Summary", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/dashboard/summary", "host": ["{{baseUrl}}"], "path": ["dashboard","summary"] } } },
+        { "name": "Tasks", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/dashboard/tasks", "host": ["{{baseUrl}}"], "path": ["dashboard","tasks"] } } },
+        { "name": "Updates", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/dashboard/updates", "host": ["{{baseUrl}}"], "path": ["dashboard","updates"] } } },
+        { "name": "Finance Overview", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/dashboard/finance-overview", "host": ["{{baseUrl}}"], "path": ["dashboard","finance-overview"] } } },
+        { "name": "Expense Breakdown", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/dashboard/expense-breakdown", "host": ["{{baseUrl}}"], "path": ["dashboard","expense-breakdown"] } } }
+      ]
+    },
+    {
+      "name": "2. Leads",
+      "item": [
+        { "name": "Get Leads", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/leads?owner=&source=&status=&search=&page=1&limit=20", "host": ["{{baseUrl}}"], "path": ["leads"], "query": [{ "key":"owner","value":"" },{ "key":"source","value":"" },{ "key":"status","value":"" },{ "key":"search","value":"" },{ "key":"page","value":"1" },{ "key":"limit","value":"20" }] } } },
+        {
+          "name": "Create Lead",
+          "request": {
+            "method": "POST",
+            "header": [{ "key":"Content-Type","value":"application/json" }],
+            "body": { "mode":"raw", "raw":"{\n  \"title\": \"New Lead\",\n  \"companyName\": \"ABC Pvt Ltd\",\n  \"status\": \"Discussion\",\n  \"ownerId\": 1,\n  \"source\": \"Online\",\n  \"address\": \"MG Road\",\n  \"city\": \"Bengaluru\",\n  \"state\": \"Karnataka\",\n  \"pincode\": \"560001\",\n  \"country\": \"India\",\n  \"phone\": \"9876543210\",\n  \"website\": \"https://abc.com\",\n  \"gstin\": \"29ABCDE1234F1Z5\"\n}" },
+            "url": { "raw": "{{baseUrl}}/leads", "host": ["{{baseUrl}}"], "path": ["leads"] }
+          }
+        },
+        { "name": "Update Lead", "request": { "method": "PUT", "header":[{ "key":"Content-Type","value":"application/json" }], "body": { "mode":"raw", "raw":"{\n  \"status\": \"In Progress\"\n}" }, "url": { "raw":"{{baseUrl}}/leads/{{leadId}}", "host":["{{baseUrl}}"], "path":["leads","{{leadId}}"] } } },
+        { "name": "Delete Lead", "request": { "method": "DELETE", "url": { "raw":"{{baseUrl}}/leads/{{leadId}}", "host":["{{baseUrl}}"], "path":["leads","{{leadId}}"] } } },
+        { "name": "Leads Kanban", "request": { "method": "GET", "url": { "raw":"{{baseUrl}}/leads/kanban", "host":["{{baseUrl}}"], "path":["leads","kanban"] } } }
+      ]
+    },
+    {
+      "name": "3. Tasks",
+      "item": [
+        { "name":"Get Tasks", "request": { "method":"GET", "url": { "raw":"{{baseUrl}}/tasks", "host":["{{baseUrl}}"], "path":["tasks"] } } },
+        { "name":"Get Completed Tasks", "request": { "method":"GET", "url": { "raw":"{{baseUrl}}/tasks?status=completed", "host":["{{baseUrl}}"], "path":["tasks"], "query":[{"key":"status","value":"completed"}] } } },
+        { "name":"Get Starred Tasks", "request": { "method":"GET", "url": { "raw":"{{baseUrl}}/tasks?is_starred=true", "host":["{{baseUrl}}"], "path":["tasks"], "query":[{"key":"is_starred","value":"true"}] } } },
+        { "name":"Get Task by ID", "request": { "method":"GET", "url": { "raw":"{{baseUrl}}/tasks/{{taskId}}", "host":["{{baseUrl}}"], "path":["tasks","{{taskId}}"] } } },
+        {
+          "name":"Create Task",
+          "request": {
+            "method":"POST",
+            "header":[{ "key":"Content-Type","value":"application/json" }],
+            "body": { "mode":"raw", "raw":"{\n  \"title\": \"Annual Filing\",\n  \"description\": \"Prepare documents\",\n  \"is_starred\": false,\n  \"collaborators\": [2,3],\n  \"approver\": 4,\n  \"labels\": [\"compliance\"],\n  \"start_date\": \"2026-03-26\",\n  \"recurring\": false\n}" },
+            "url": { "raw":"{{baseUrl}}/tasks", "host":["{{baseUrl}}"], "path":["tasks"] }
+          }
+        },
+        { "name":"Toggle Star", "request": { "method":"PATCH", "url": { "raw":"{{baseUrl}}/tasks/{{taskId}}/star", "host":["{{baseUrl}}"], "path":["tasks","{{taskId}}","star"] } } },
+        { "name":"Update Task", "request": { "method":"PUT", "header":[{ "key":"Content-Type","value":"application/json" }], "body": { "mode":"raw", "raw":"{\n  \"status\": \"completed\"\n}" }, "url": { "raw":"{{baseUrl}}/tasks/{{taskId}}", "host":["{{baseUrl}}"], "path":["tasks","{{taskId}}"] } } },
+        { "name":"Delete Task", "request": { "method":"DELETE", "url": { "raw":"{{baseUrl}}/tasks/{{taskId}}", "host":["{{baseUrl}}"], "path":["tasks","{{taskId}}"] } } }
+      ]
+    },
+    {
+      "name": "4. Checklist + Assignments",
+      "item": [
+        { "name":"Get Checklists", "request": { "method":"GET", "url": { "raw":"{{baseUrl}}/checklists", "host":["{{baseUrl}}"], "path":["checklists"] } } },
+        { "name":"Create Checklist", "request": { "method":"POST", "header":[{ "key":"Content-Type","value":"application/json" }], "body": { "mode":"raw", "raw":"{\n  \"title\": \"Monthly Compliance\"\n}" }, "url": { "raw":"{{baseUrl}}/checklists", "host":["{{baseUrl}}"], "path":["checklists"] } } },
+        { "name":"Delete Checklist", "request": { "method":"DELETE", "url": { "raw":"{{baseUrl}}/checklists/{{checklistId}}", "host":["{{baseUrl}}"], "path":["checklists","{{checklistId}}"] } } },
+        { "name":"Get Assignments", "request": { "method":"GET", "url": { "raw":"{{baseUrl}}/assignments", "host":["{{baseUrl}}"], "path":["assignments"] } } },
+        { "name":"Create Assignment", "request": { "method":"POST", "header":[{ "key":"Content-Type","value":"application/json" }], "body": { "mode":"raw", "raw":"{\n  \"companyId\": 1,\n  \"checklistId\": 1,\n  \"makerId\": 2,\n  \"checkerId\": 3,\n  \"dueDate\": \"2026-03-30\"\n}" }, "url": { "raw":"{{baseUrl}}/assignments", "host":["{{baseUrl}}"], "path":["assignments"] } } }
+      ]
+    },
+    {
+      "name": "5. HRMS",
+      "item": [
+        { "name":"Get Employees", "request": { "method":"GET", "url": { "raw":"{{baseUrl}}/hrms/employees", "host":["{{baseUrl}}"], "path":["hrms","employees"] } } },
+        { "name":"Create Employee", "request": { "method":"POST", "header":[{ "key":"Content-Type","value":"application/json" }], "body": { "mode":"raw", "raw":"{\n  \"user_id\": 1,\n  \"employee_code\": \"EMP001\"\n}" }, "url": { "raw":"{{baseUrl}}/hrms/employees", "host":["{{baseUrl}}"], "path":["hrms","employees"] } } },
+        { "name":"Clock In", "request": { "method":"POST", "url": { "raw":"{{baseUrl}}/hrms/attendance/clock-in", "host":["{{baseUrl}}"], "path":["hrms","attendance","clock-in"] } } },
+        { "name":"Clock Out", "request": { "method":"PUT", "url": { "raw":"{{baseUrl}}/hrms/attendance/clock-out", "host":["{{baseUrl}}"], "path":["hrms","attendance","clock-out"] } } },
+        { "name":"Get Attendance", "request": { "method":"GET", "url": { "raw":"{{baseUrl}}/hrms/attendance", "host":["{{baseUrl}}"], "path":["hrms","attendance"] } } },
+        { "name":"Apply Leave", "request": { "method":"POST", "header":[{ "key":"Content-Type","value":"application/json" }], "body": { "mode":"raw", "raw":"{\n  \"leave_type\": \"casual\",\n  \"start_date\": \"2026-03-27\",\n  \"end_date\": \"2026-03-28\",\n  \"total_days\": 2,\n  \"reason\": \"Personal\"\n}" }, "url": { "raw":"{{baseUrl}}/hrms/leave", "host":["{{baseUrl}}"], "path":["hrms","leave"] } } },
+        { "name":"Leave Action", "request": { "method":"PUT", "header":[{ "key":"Content-Type","value":"application/json" }], "body": { "mode":"raw", "raw":"{\n  \"status\": \"approved\"\n}" }, "url": { "raw":"{{baseUrl}}/hrms/leave/{{leaveId}}/action", "host":["{{baseUrl}}"], "path":["hrms","leave","{{leaveId}}","action"] } } },
+        { "name":"Get Salary", "request": { "method":"GET", "url": { "raw":"{{baseUrl}}/hrms/salary", "host":["{{baseUrl}}"], "path":["hrms","salary"] } } },
+        { "name":"Create Salary", "request": { "method":"POST", "header":[{ "key":"Content-Type","value":"application/json" }], "body": { "mode":"raw", "raw":"{\n  \"employee_id\": 1,\n  \"salary_in_hand\": 45000\n}" }, "url": { "raw":"{{baseUrl}}/hrms/salary", "host":["{{baseUrl}}"], "path":["hrms","salary"] } } },
+        { "name":"Delete Salary", "request": { "method":"DELETE", "url": { "raw":"{{baseUrl}}/hrms/salary/{{salaryId}}", "host":["{{baseUrl}}"], "path":["hrms","salary","{{salaryId}}"] } } }
+      ]
+    },
+    {
+      "name": "6. Business Manager",
+      "item": [
+        { "name":"Get Insurance", "request": { "method":"GET", "url": { "raw":"{{baseUrl}}/business/insurance", "host":["{{baseUrl}}"], "path":["business","insurance"] } } },
+        { "name":"Create Insurance", "request": { "method":"POST", "header":[{ "key":"Content-Type","value":"application/json" }], "body": { "mode":"raw", "raw":"{\n  \"company_id\": 1,\n  \"policy_number\": \"P123\"\n}" }, "url": { "raw":"{{baseUrl}}/business/insurance", "host":["{{baseUrl}}"], "path":["business","insurance"] } } },
+        { "name":"Update Insurance", "request": { "method":"PUT", "header":[{ "key":"Content-Type","value":"application/json" }], "body": { "mode":"raw", "raw":"{\n  \"remarks\": \"Updated\"\n}" }, "url": { "raw":"{{baseUrl}}/business/insurance/{{insuranceId}}", "host":["{{baseUrl}}"], "path":["business","insurance","{{insuranceId}}"] } } },
+        { "name":"Delete Insurance", "request": { "method":"DELETE", "url": { "raw":"{{baseUrl}}/business/insurance/{{insuranceId}}", "host":["{{baseUrl}}"], "path":["business","insurance","{{insuranceId}}"] } } },
+        { "name":"Upload Insurance File", "request": { "method":"POST", "body": { "mode":"formdata", "formdata":[{ "key":"file", "type":"file", "src":"" }] }, "url": { "raw":"{{baseUrl}}/business/insurance/{{insuranceId}}/upload", "host":["{{baseUrl}}"], "path":["business","insurance","{{insuranceId}}","upload"] } } },
+
+        { "name":"Get Contracts", "request": { "method":"GET", "url": { "raw":"{{baseUrl}}/business/contracts", "host":["{{baseUrl}}"], "path":["business","contracts"] } } },
+        { "name":"Create Contract", "request": { "method":"POST", "header":[{ "key":"Content-Type","value":"application/json" }], "body": { "mode":"raw", "raw":"{\n  \"company_id\": 1,\n  \"contract_name\": \"Service Agreement\"\n}" }, "url": { "raw":"{{baseUrl}}/business/contracts", "host":["{{baseUrl}}"], "path":["business","contracts"] } } },
+        { "name":"Update Contract", "request": { "method":"PUT", "header":[{ "key":"Content-Type","value":"application/json" }], "body": { "mode":"raw", "raw":"{\n  \"remarks\": \"Updated\"\n}" }, "url": { "raw":"{{baseUrl}}/business/contracts/{{contractId}}", "host":["{{baseUrl}}"], "path":["business","contracts","{{contractId}}"] } } },
+        { "name":"Delete Contract", "request": { "method":"DELETE", "url": { "raw":"{{baseUrl}}/business/contracts/{{contractId}}", "host":["{{baseUrl}}"], "path":["business","contracts","{{contractId}}"] } } },
+        { "name":"Upload Contract File", "request": { "method":"POST", "body": { "mode":"formdata", "formdata":[{ "key":"file", "type":"file", "src":"" }] }, "url": { "raw":"{{baseUrl}}/business/contracts/{{contractId}}/upload", "host":["{{baseUrl}}"], "path":["business","contracts","{{contractId}}","upload"] } } },
+
+        { "name":"Get Licenses", "request": { "method":"GET", "url": { "raw":"{{baseUrl}}/business/licenses", "host":["{{baseUrl}}"], "path":["business","licenses"] } } },
+        { "name":"Create License", "request": { "method":"POST", "header":[{ "key":"Content-Type","value":"application/json" }], "body": { "mode":"raw", "raw":"{\n  \"company_id\": 1,\n  \"document_type\": \"GST\"\n}" }, "url": { "raw":"{{baseUrl}}/business/licenses", "host":["{{baseUrl}}"], "path":["business","licenses"] } } },
+        { "name":"Update License", "request": { "method":"PUT", "header":[{ "key":"Content-Type","value":"application/json" }], "body": { "mode":"raw", "raw":"{\n  \"status\": \"active\"\n}" }, "url": { "raw":"{{baseUrl}}/business/licenses/{{licenseId}}", "host":["{{baseUrl}}"], "path":["business","licenses","{{licenseId}}"] } } },
+        { "name":"Delete License", "request": { "method":"DELETE", "url": { "raw":"{{baseUrl}}/business/licenses/{{licenseId}}", "host":["{{baseUrl}}"], "path":["business","licenses","{{licenseId}}"] } } }
+      ]
+    },
+    {
+      "name": "7. Auditor + Client + MIS",
+      "item": [
+        { "name":"Get Auditors", "request": { "method":"GET", "url": { "raw":"{{baseUrl}}/auditors?page=1&limit=20", "host":["{{baseUrl}}"], "path":["auditors"], "query":[{"key":"page","value":"1"},{"key":"limit","value":"20"}] } } },
+        { "name":"Create Auditor", "request": { "method":"POST", "header":[{ "key":"Content-Type","value":"application/json" }], "body": { "mode":"raw", "raw":"{\n  \"category\": \"statutory\",\n  \"auditor_name\": \"John\"\n}" }, "url": { "raw":"{{baseUrl}}/auditors", "host":["{{baseUrl}}"], "path":["auditors"] } } },
+        { "name":"Company-wise Auditors", "request": { "method":"GET", "url": { "raw":"{{baseUrl}}/auditors/company-wise?company_id={{companyId}}", "host":["{{baseUrl}}"], "path":["auditors","company-wise"], "query":[{"key":"company_id","value":"{{companyId}}"}] } } },
+        { "name":"Upload ADT1", "request": { "method":"POST", "body": { "mode":"formdata", "formdata":[{ "key":"file_v2", "type":"file", "src":"" },{ "key":"file_v3", "type":"file", "src":"" }] }, "url": { "raw":"{{baseUrl}}/auditors/adt1-upload", "host":["{{baseUrl}}"], "path":["auditors","adt1-upload"] } } },
+        { "name":"Get Client Groups", "request": { "method":"GET", "url": { "raw":"{{baseUrl}}/client-groups", "host":["{{baseUrl}}"], "path":["client-groups"] } } },
+        { "name":"Create Client Group", "request": { "method":"POST", "header":[{ "key":"Content-Type","value":"application/json" }], "body": { "mode":"raw", "raw":"{\n  \"title\": \"Group A\",\n  \"contact_name\": \"Ravi\"\n}" }, "url": { "raw":"{{baseUrl}}/client-groups", "host":["{{baseUrl}}"], "path":["client-groups"] } } },
+        { "name":"Get Companies", "request": { "method":"GET", "url": { "raw":"{{baseUrl}}/companies?page=1&limit=20", "host":["{{baseUrl}}"], "path":["companies"], "query":[{"key":"page","value":"1"},{"key":"limit","value":"20"}] } } },
+        { "name":"Generate MIS", "request": { "method":"POST", "header":[{ "key":"Content-Type","value":"application/json" }], "body": { "mode":"raw", "raw":"{\n  \"company_id\": {{companyId}},\n  \"date\": \"2026-03-26\",\n  \"type\": \"company\"\n}" }, "url": { "raw":"{{baseUrl}}/mis-report/generate", "host":["{{baseUrl}}"], "path":["mis-report","generate"] } } },
+        { "name":"MIS History", "request": { "method":"GET", "url": { "raw":"{{baseUrl}}/mis-report/history?company_id={{companyId}}", "host":["{{baseUrl}}"], "path":["mis-report","history"], "query":[{"key":"company_id","value":"{{companyId}}"}] } } }
+      ]
+    },
+    {
+      "name": "8. Common",
+      "item": [
+        { "name":"Get Users", "request": { "method":"GET", "url": { "raw":"{{baseUrl}}/users", "host":["{{baseUrl}}"], "path":["users"] } } },
+        { "name":"Get Master Status", "request": { "method":"GET", "url": { "raw":"{{baseUrl}}/masters/status", "host":["{{baseUrl}}"], "path":["masters","status"] } } },
+        { "name":"Get Master Sources", "request": { "method":"GET", "url": { "raw":"{{baseUrl}}/masters/sources", "host":["{{baseUrl}}"], "path":["masters","sources"] } } },
+        { "name":"Upload File", "request": { "method":"POST", "body": { "mode":"formdata", "formdata":[{ "key":"file", "type":"file", "src":"" }] }, "url": { "raw":"{{baseUrl}}/upload", "host":["{{baseUrl}}"], "path":["upload"] } } }
+      ]
+    }
+  ]
+}

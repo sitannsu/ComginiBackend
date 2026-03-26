@@ -1,0 +1,538 @@
+{
+	"info": {
+		"_postman_id": "7d3a8e1b-9c2d-4e5f-b6a7-0f8e9d0c1b2a",
+		"name": "Comgini-New-Modules-API",
+		"description": "Collection for FILLIP/SPICE, Checklist, Assignment, and Timesheet modules.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "1. FILLIP / SPICE",
+			"item": [
+				{
+					"name": "Get All Forms (In Progress)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/forms?type=FILLIP&status=in_progress",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"forms"
+							],
+							"query": [
+								{
+									"key": "type",
+									"value": "FILLIP"
+								},
+								{
+									"key": "status",
+									"value": "in_progress"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Forms (Completed)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/forms?type=SPICE&status=completed",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"forms"
+							],
+							"query": [
+								{
+									"key": "type",
+									"value": "SPICE"
+								},
+								{
+									"key": "status",
+									"value": "completed"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "2. COMPANY SEARCH",
+			"item": [
+				{
+					"name": "Search Company",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/company/search?query=abc",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"company",
+								"search"
+							],
+							"query": [
+								{
+									"key": "query",
+									"value": "abc"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "3. CHECKLIST MODULE",
+			"item": [
+				{
+					"name": "Get All Checklists",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/checklists",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"checklists"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Checklist",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Standard Incorporation Checklist\",\n  \"items\": [\n    {\n      \"srNo\": 1,\n      \"particular\": \"Document verification\"\n    },\n    {\n      \"srNo\": 2,\n      \"particular\": \"Physical verification of premises\"\n    }\n  ]\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/checklists",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"checklists"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Checklist",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/checklists/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"checklists",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Import Checklist (Excel)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": "/path/to/checklist.xlsx"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/checklists/import",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"checklists",
+								"import"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "4. ASSIGN CHECKLIST",
+			"item": [
+				{
+					"name": "Get Assignment List",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/assignments?status=pending",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"assignments"
+							],
+							"query": [
+								{
+									"key": "status",
+									"value": "pending"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Assign Checklist",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"companyId\": \"1\",\n  \"checklistId\": \"2\",\n  \"makerId\": \"1\",\n  \"checkerId\": \"2\",\n  \"dueDate\": \"2026-02-25\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/assignments",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"assignments"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Lookup Users (Maker)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/users?role=maker",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"users"
+							],
+							"query": [
+								{
+									"key": "role",
+									"value": "maker"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Lookup Users (Checker)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/users?role=checker",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"users"
+							],
+							"query": [
+								{
+									"key": "role",
+									"value": "checker"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Lookup Companies",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/companies",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"companies"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "5. TIMESHEETS MODULE",
+			"item": [
+				{
+					"name": "Get Timesheets",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/timesheets?fromDate=2026-02-01&toDate=2026-03-01",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"timesheets"
+							],
+							"query": [
+								{
+									"key": "fromDate",
+									"value": "2026-02-01"
+								},
+								{
+									"key": "toDate",
+									"value": "2026-03-01"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Timesheet",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"memberId\": \"1\",\n  \"clientId\": \"1\",\n  \"assignmentId\": \"1\",\n  \"task\": \"Tax Audit Documentation\",\n  \"startDate\": \"2026-02-23\",\n  \"startTime\": \"10:00\",\n  \"endDate\": \"2026-02-23\",\n  \"endTime\": \"12:30\",\n  \"note\": \"Drafting preliminary audit report for FY24-25\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/timesheets",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"timesheets"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Summary",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/timesheets/summary?fromDate=2026-02-01&toDate=2026-03-01",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"timesheets",
+								"summary"
+							],
+							"query": [
+								{
+									"key": "fromDate",
+									"value": "2026-02-01"
+								},
+								{
+									"key": "toDate",
+									"value": "2026-03-01"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:3000",
+			"type": "string"
+		},
+		{
+			"key": "token",
+			"value": "YOUR_TOKEN_HERE",
+			"type": "string"
+		}
+	]
+}

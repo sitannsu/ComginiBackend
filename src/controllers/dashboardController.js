@@ -152,7 +152,15 @@ const getDashboardSummary = async (req, res) => {
 
         res.json({
             success: true,
-            data: { totalClients, totalTasks, overdueTasks, upcomingEvents, pendingFilings, openTickets }
+            data: {
+                totalClients, totalTasks, overdueTasks, upcomingEvents, pendingFilings, openTickets,
+                pendingApproval: pendingFilings,
+                pendingReview: totalTasks,
+                inRequest: upcomingEvents,
+                executed: totalClients,
+                pendingSignature: openTickets,
+                furtherProcessing: overdueTasks
+            }
         });
     } catch (error) {
         console.error('Dashboard summary error:', error);
@@ -160,9 +168,87 @@ const getDashboardSummary = async (req, res) => {
     }
 };
 
+const getDashboardTasks = async (req, res) => {
+    try {
+        const [rows] = await pool.query(
+            `SELECT id, title, priority, status
+             FROM tasks
+             ORDER BY updated_at DESC
+             LIMIT 10`
+        );
+        res.json({ success: true, message: 'Success', data: rows });
+    } catch (error) {
+        console.error('Dashboard tasks error:', error);
+        res.status(500).json({ success: false, message: 'Failed to fetch dashboard tasks' });
+    }
+};
+
+const getDashboardUpdates = async (req, res) => {
+    try {
+        const [rows] = await pool.query(
+            `SELECT title, DATE(created_at) as date
+             FROM tasks
+             ORDER BY created_at DESC
+             LIMIT 10`
+        );
+        res.json({ success: true, message: 'Success', data: rows });
+    } catch (error) {
+        console.error('Dashboard updates error:', error);
+        res.status(500).json({ success: false, message: 'Failed to fetch dashboard updates' });
+    }
+};
+
+const getFinanceOverview = async (req, res) => {
+    try {
+        const [rows] = await pool.query(
+            `SELECT DATE_FORMAT(expense_date, '%b') as month_label, SUM(amount) as total
+             FROM expenses
+             GROUP BY DATE_FORMAT(expense_date, '%Y-%m'), DATE_FORMAT(expense_date, '%b')
+             ORDER BY DATE_FORMAT(expense_date, '%Y-%m')
+             LIMIT 12`
+        );
+        res.json({
+            success: true,
+            message: 'Success',
+            data: {
+                months: rows.map(r => r.month_label),
+                values: rows.map(r => Number(r.total))
+            }
+        });
+    } catch (error) {
+        console.error('Finance overview error:', error);
+        res.status(500).json({ success: false, message: 'Failed to fetch finance overview' });
+    }
+};
+
+const getExpenseBreakdown = async (req, res) => {
+    try {
+        const [rows] = await pool.query(
+            `SELECT
+                SUM(CASE WHEN LOWER(category) LIKE '%team%' THEN amount ELSE 0 END) as teamProject,
+                SUM(CASE WHEN LOWER(category) LIKE '%operat%' THEN amount ELSE 0 END) as operational,
+                SUM(CASE WHEN LOWER(category) LIKE '%market%' THEN amount ELSE 0 END) as marketing
+             FROM expenses`
+        );
+        const r = rows[0] || {};
+        res.json({
+            success: true,
+            message: 'Success',
+            data: {
+                teamProject: Number(r.teamProject || 0),
+                operational: Number(r.operational || 0),
+                marketing: Number(r.marketing || 0)
+            }
+        });
+    } catch (error) {
+        console.error('Expense breakdown error:', error);
+        res.status(500).json({ success: false, message: 'Failed to fetch expense breakdown' });
+    }
+};
+
 module.exports = {
     getWidgets, updateWidgets,
     getNotes, createNote, updateNote, deleteNote,
     getFeed, createPost, deletePost,
-    getDashboardSummary
+    getDashboardSummary, getDashboardTasks, getDashboardUpdates, getFinanceOverview, getExpenseBreakdown
 };

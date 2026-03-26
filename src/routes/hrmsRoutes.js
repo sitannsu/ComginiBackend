@@ -20,5 +20,13 @@ router.put('/attendance/clock-out', hc.clockOut);
 router.get('/leaves', hc.getLeaves);
 router.post('/leaves', hc.applyLeave);
 router.put('/leaves/:id/approve', hc.approveLeave);
+// UI aliases
+router.post('/leave', hc.applyLeave);
+router.put('/leave/:id/action', hc.approveLeave);
+
+// Salary
+router.get('/salary', hc.getSalary);
+router.post('/salary', hc.createSalary);
+router.delete('/salary/:id', hc.deleteSalary);
 
 module.exports = router;

@@ -25,8 +25,9 @@ const mastersExtraRoutes = require('./routes/mastersExtraRoutes');
 const checklistRoutes = require('./routes/checklistRoutes');
 const assignmentRoutes = require('./routes/assignmentRoutes');
 const timesheetRoutes = require('./routes/timesheetRoutes');
+const leadsRoutes = require('./routes/leadsRoutes');
+const commonRoutes = require('./routes/commonRoutes');
 const ac = require('./controllers/assignmentController');
-const cc = require('./controllers/checklistController');
 const { generalLimiter } = require('./middleware/rateLimiter');
 
 const app = express();
@@ -83,6 +84,11 @@ app.use(`${v1}/mca`, mcaRoutes);
 app.use(`${v1}/efiling`, efilingRoutes);
 app.use(v1, entityRoutes);
 app.use(v1, mastersExtraRoutes);
+app.use(`${v1}/checklists`, checklistRoutes);
+app.use(`${v1}/assignments`, assignmentRoutes);
+app.use(`${v1}/timesheets`, timesheetRoutes);
+app.use(`${v1}/leads`, leadsRoutes);
+app.use(v1, commonRoutes);
 
 // New requested routes
 app.use('/api/forms', incorporationRoutes);

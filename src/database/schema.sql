@@ -512,6 +512,28 @@ CREATE TABLE IF NOT EXISTS report_schedules (
     FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL
 );
 
+CREATE TABLE IF NOT EXISTS leads (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255),
+    company_name VARCHAR(255),
+    status VARCHAR(100),
+    owner_id INT,
+    source VARCHAR(100),
+    address TEXT,
+    city VARCHAR(100),
+    state VARCHAR(100),
+    pincode VARCHAR(20),
+    country VARCHAR(100),
+    phone VARCHAR(20),
+    website VARCHAR(255),
+    gstin VARCHAR(20),
+    created_by INT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE SET NULL,
+    FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL
+);
+
 -- 10. HRMS & TEAM MANAGEMENT
 -- =============================================
 
@@ -533,6 +555,19 @@ CREATE TABLE IF NOT EXISTS employees (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
+);
+
+CREATE TABLE IF NOT EXISTS salary_details (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    employee_id INT NOT NULL,
+    salary_in_hand DECIMAL(12,2),
+    overtime_per_day DECIMAL(10,2),
+    leave_deduction DECIMAL(10,2),
+    paid_leave INT DEFAULT 0,
+    financial_year VARCHAR(20),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS attendance (
@@ -578,6 +613,53 @@ CREATE TABLE IF NOT EXISTS registrations_licenses (
     status ENUM('active','expired','renewal_pending') DEFAULT 'active',
     file_url VARCHAR(500),
     alert_days_before INT DEFAULT 30,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE SET NULL
+);
+
+CREATE TABLE IF NOT EXISTS business_insurance (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    company_id INT,
+    insurance_company VARCHAR(255),
+    broker_name VARCHAR(255),
+    policy_type VARCHAR(100),
+    policy_number VARCHAR(100),
+    sum_insured DECIMAL(15,2),
+    policy_commencement_date DATE,
+    renewal_date DATE,
+    start_from DATE,
+    expiry_date DATE,
+    amount_paid DECIMAL(15,2),
+    mode_of_payment VARCHAR(100),
+    asset_insured VARCHAR(255),
+    payment_date DATE,
+    key_terms TEXT,
+    alert_user VARCHAR(255),
+    alert_before VARCHAR(50),
+    remarks TEXT,
+    file_url VARCHAR(500),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE SET NULL
+);
+
+CREATE TABLE IF NOT EXISTS business_contracts (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    company_id INT,
+    category VARCHAR(100),
+    contract_name VARCHAR(255),
+    contract_value DECIMAL(15,2),
+    contract_period VARCHAR(100),
+    name_of_party VARCHAR(255),
+    date_of_execution DATE,
+    start_from DATE,
+    expiry_date DATE,
+    key_terms TEXT,
+    alert_user VARCHAR(255),
+    alert_before VARCHAR(50),
+    remarks TEXT,
+    file_url VARCHAR(500),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE SET NULL

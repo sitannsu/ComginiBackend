@@ -194,8 +194,59 @@ const approveLeave = async (req, res) => {
     }
 };
 
+// ---- SALARY ----
+const getSalary = async (req, res) => {
+    try {
+        const { employee_id, financial_year } = req.query;
+        let where = '1=1';
+        const params = [];
+        if (employee_id) { where += ' AND sd.employee_id = ?'; params.push(employee_id); }
+        if (financial_year) { where += ' AND sd.financial_year = ?'; params.push(financial_year); }
+        const [rows] = await pool.query(
+            `SELECT sd.*, u.first_name, u.last_name
+             FROM salary_details sd
+             JOIN employees e ON sd.employee_id = e.id
+             LEFT JOIN users u ON e.user_id = u.id
+             WHERE ${where}
+             ORDER BY sd.updated_at DESC`,
+            params
+        );
+        res.json({ success: true, message: 'Success', data: rows });
+    } catch (error) {
+        console.error('Get salary error:', error);
+        res.status(500).json({ success: false, message: 'Failed to fetch salary' });
+    }
+};
+
+const createSalary = async (req, res) => {
+    try {
+        const { employee_id, salary_in_hand, overtime_per_day, leave_deduction, paid_leave, financial_year } = req.body;
+        const [result] = await pool.query(
+            `INSERT INTO salary_details (employee_id, salary_in_hand, overtime_per_day, leave_deduction, paid_leave, financial_year)
+             VALUES (?, ?, ?, ?, ?, ?)`,
+            [employee_id, salary_in_hand, overtime_per_day, leave_deduction, paid_leave || 0, financial_year]
+        );
+        const [rows] = await pool.query('SELECT * FROM salary_details WHERE id = ?', [result.insertId]);
+        res.status(201).json({ success: true, message: 'Success', data: rows[0] });
+    } catch (error) {
+        console.error('Create salary error:', error);
+        res.status(500).json({ success: false, message: 'Failed to create salary' });
+    }
+};
+
+const deleteSalary = async (req, res) => {
+    try {
+        await pool.query('DELETE FROM salary_details WHERE id = ?', [req.params.id]);
+        res.json({ success: true, message: 'Success', data: [] });
+    } catch (error) {
+        console.error('Delete salary error:', error);
+        res.status(500).json({ success: false, message: 'Failed to delete salary' });
+    }
+};
+
 module.exports = {
     getEmployees, getEmployeeById, createEmployee, updateEmployee,
     getAttendance, clockIn, clockOut,
-    getLeaves, applyLeave, approveLeave
+    getLeaves, applyLeave, approveLeave,
+    getSalary, createSalary, deleteSalary
 };
