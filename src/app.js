@@ -4,6 +4,9 @@ const helmet = require('helmet');
 const morgan = require('morgan');
 require('dotenv').config();
 
+const { authenticateToken } = require('./middleware/auth');
+const { generalLimiter } = require('./middleware/rateLimiter');
+
 const authRoutes = require('./routes/authRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
 const clientRoutes = require('./routes/clientRoutes');
@@ -29,8 +32,6 @@ const leadsRoutes = require('./routes/leadsRoutes');
 const commonRoutes = require('./routes/commonRoutes');
 const dc = require('./controllers/dashboardController');
 const ac = require('./controllers/assignmentController');
-const { authenticateToken } = require('./middleware/auth');
-const { generalLimiter } = require('./middleware/rateLimiter');
 
 const app = express();
 
