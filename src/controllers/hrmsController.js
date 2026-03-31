@@ -50,6 +50,9 @@ const createEmployee = async (req, res) => {
         const [rows] = await pool.query('SELECT e.*, u.first_name, u.last_name FROM employees e LEFT JOIN users u ON e.user_id = u.id WHERE e.id = ?', [result.insertId]);
         res.status(201).json({ success: true, data: rows[0] });
     } catch (error) {
+        if (error && error.code === 'ER_DUP_ENTRY') {
+            return res.status(409).json({ success: false, message: 'Employee already exists for this user' });
+        }
         console.error('Create employee error:', error);
         res.status(500).json({ success: false, message: 'Failed to create employee' });
     }
@@ -96,16 +99,22 @@ const getAttendance = async (req, res) => {
 
 const clockIn = async (req, res) => {
     try {
-        const [empRows] = await pool.query('SELECT id FROM employees WHERE user_id = ?', [req.user.id]);
-        if (empRows.length === 0) return res.status(404).json({ success: false, message: 'Employee record not found' });
+        let empId;
+        if (req.body.employee_id) {
+            empId = req.body.employee_id;
+        } else {
+            const [empRows] = await pool.query('SELECT id FROM employees WHERE user_id = ?', [req.user.id]);
+            if (empRows.length === 0) return res.status(404).json({ success: false, message: 'Employee record not found' });
+            empId = empRows[0].id;
+        }
 
         const today = new Date().toISOString().split('T')[0];
-        const [existing] = await pool.query('SELECT * FROM attendance WHERE employee_id = ? AND date = ?', [empRows[0].id, today]);
+        const [existing] = await pool.query('SELECT * FROM attendance WHERE employee_id = ? AND date = ?', [empId, today]);
         if (existing.length > 0) return res.status(400).json({ success: false, message: 'Already clocked in today' });
 
         const [result] = await pool.query(
             'INSERT INTO attendance (employee_id, date, in_time, status) VALUES (?, ?, NOW(), "present")',
-            [empRows[0].id, today]
+            [empId, today]
         );
         const [rows] = await pool.query('SELECT * FROM attendance WHERE id = ?', [result.insertId]);
         res.status(201).json({ success: true, data: rows[0] });
@@ -117,16 +126,22 @@ const clockIn = async (req, res) => {
 
 const clockOut = async (req, res) => {
     try {
-        const [empRows] = await pool.query('SELECT id FROM employees WHERE user_id = ?', [req.user.id]);
-        if (empRows.length === 0) return res.status(404).json({ success: false, message: 'Employee record not found' });
+        let empId;
+        if (req.body.employee_id) {
+            empId = req.body.employee_id;
+        } else {
+            const [empRows] = await pool.query('SELECT id FROM employees WHERE user_id = ?', [req.user.id]);
+            if (empRows.length === 0) return res.status(404).json({ success: false, message: 'Employee record not found' });
+            empId = empRows[0].id;
+        }
 
         const today = new Date().toISOString().split('T')[0];
         await pool.query(
             `UPDATE attendance SET out_time = NOW(), working_hours = TIMESTAMPDIFF(MINUTE, in_time, NOW()) / 60
              WHERE employee_id = ? AND date = ? AND out_time IS NULL`,
-            [empRows[0].id, today]
+            [empId, today]
         );
-        const [rows] = await pool.query('SELECT * FROM attendance WHERE employee_id = ? AND date = ?', [empRows[0].id, today]);
+        const [rows] = await pool.query('SELECT * FROM attendance WHERE employee_id = ? AND date = ?', [empId, today]);
         res.json({ success: true, data: rows[0] });
     } catch (error) {
         console.error('Clock out error:', error);
@@ -167,9 +182,16 @@ const applyLeave = async (req, res) => {
         const [empRows] = await pool.query('SELECT id FROM employees WHERE user_id = ?', [req.user.id]);
         if (empRows.length === 0) return res.status(404).json({ success: false, message: 'Employee record not found' });
 
+        let calculatedDays = total_days;
+        if (!calculatedDays && start_date && end_date) {
+            const start = new Date(start_date);
+            const end = new Date(end_date);
+            calculatedDays = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
+        }
+
         const [result] = await pool.query(
             'INSERT INTO leaves (employee_id, leave_type, start_date, end_date, total_days, reason) VALUES (?, ?, ?, ?, ?, ?)',
-            [empRows[0].id, leave_type, start_date, end_date, total_days, reason]
+            [empRows[0].id, leave_type, start_date, end_date, calculatedDays || 0, reason]
         );
         const [rows] = await pool.query('SELECT * FROM leaves WHERE id = ?', [result.insertId]);
         res.status(201).json({ success: true, data: rows[0] });

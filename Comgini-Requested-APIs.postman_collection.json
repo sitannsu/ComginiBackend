@@ -1,0 +1,97 @@
+{
+  "info": {
+    "_postman_id": "comgini-requested-apis-v1",
+    "name": "Comgini Requested APIs",
+    "description": "Collection for requested dashboard, MCA, productivity, HRMS and authentication APIs.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "https://app.comgini.in/api/v1" },
+    { "key": "token", "value": "" }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }]
+  },
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Update Profile (Requested GET)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/update-profile",
+              "host": ["{{baseUrl}}"],
+              "path": ["update-profile"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Dashboard",
+      "item": [
+        { "name": "Attendance Timer", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/attendance/timer", "host": ["{{baseUrl}}"], "path": ["attendance", "timer"] } } },
+        { "name": "Lex Buddy Content", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/lexbuddy/content", "host": ["{{baseUrl}}"], "path": ["lexbuddy", "content"] } } }
+      ]
+    },
+    {
+      "name": "MCA Integration",
+      "item": [
+        { "name": "List VPD", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/mca/vpd/list", "host": ["{{baseUrl}}"], "path": ["mca", "vpd", "list"] } } },
+        { "name": "Fetch Charges", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/mca/charge", "host": ["{{baseUrl}}"], "path": ["mca", "charge"] } } },
+        { "name": "Company Get List", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/company-get-list", "host": ["{{baseUrl}}"], "path": ["company-get-list"] } } },
+        { "name": "Get Company Details", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/get-company-details", "host": ["{{baseUrl}}"], "path": ["get-company-details"] } } },
+        { "name": "Sync MCA Data", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/sync-mca-data", "host": ["{{baseUrl}}"], "path": ["sync-mca-data"] } } },
+        { "name": "Auto Pay MCA Fees", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/auto-pay-mca-fees", "host": ["{{baseUrl}}"], "path": ["auto-pay-mca-fees"] } } },
+        { "name": "Delete Company Details", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/delete-company-details", "host": ["{{baseUrl}}"], "path": ["delete-company-details"] } } }
+      ]
+    },
+    {
+      "name": "Productivity",
+      "item": [
+        { "name": "Task Call Logs", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/task-call-logs", "host": ["{{baseUrl}}"], "path": ["task-call-logs"] } } },
+        { "name": "Sync Calendar", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/sync-calendar", "host": ["{{baseUrl}}"], "path": ["sync-calendar"] } } }
+      ]
+    },
+    {
+      "name": "HRMS Attendance",
+      "item": [
+        {
+          "name": "Clock In",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"employeeId\": \"\",\n  \"time\": \"\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/hrms/attendance/clock-in",
+              "host": ["{{baseUrl}}"],
+              "path": ["hrms", "attendance", "clock-in"]
+            }
+          }
+        },
+        {
+          "name": "Clock Out",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"employeeId\": \"\",\n  \"time\": \"\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/hrms/attendance/clock-out",
+              "host": ["{{baseUrl}}"],
+              "path": ["hrms", "attendance", "clock-out"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

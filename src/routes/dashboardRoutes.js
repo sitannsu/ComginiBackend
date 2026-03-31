@@ -7,6 +7,10 @@ router.use(authenticateToken);
 
 // Dashboard Summary
 router.get('/summary', dc.getDashboardSummary);
+router.get('/stats', dc.getDashboardStats);
+router.get('/payments', dc.getDashboardPayments);
+router.get('/income-expense', dc.getDashboardIncomeExpense);
+router.get('/finance-breakdown', dc.getDashboardFinanceBreakdown);
 router.get('/tasks', dc.getDashboardTasks);
 router.get('/updates', dc.getDashboardUpdates);
 router.get('/finance-overview', dc.getFinanceOverview);

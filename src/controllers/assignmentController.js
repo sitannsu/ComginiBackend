@@ -46,9 +46,14 @@ const getAssignments = async (req, res) => {
 
 const createAssignment = async (req, res) => {
     try {
-        const { companyId, checklistId, makerId, checkerId, dueDate } = req.body;
+        const companyId = req.body.company_id || req.body.companyId;
+        const checklistId = req.body.checklist_id || req.body.checklistId;
+        const makerId = req.body.maker_id || req.body.makerId;
+        const checkerId = req.body.checker_id || req.body.checkerId;
+        const dueDate = req.body.due_date || req.body.dueDate;
+
         if (!companyId || !checklistId || !makerId || !checkerId) {
-            return res.status(400).json({ success: false, message: 'Required fields: companyId, checklistId, makerId, checkerId' });
+            return res.status(400).json({ success: false, message: 'Required fields: company_id, checklist_id, maker_id, checker_id' });
         }
 
         const [result] = await pool.query(

@@ -11,6 +11,8 @@ router.get('/:id', tc.getTaskById);
 router.post('/', tc.createTask);
 router.patch('/:id/star', tc.toggleTaskStar);
 router.put('/:id', tc.updateTask);
+router.patch('/:id', tc.updateTask);
+router.patch('/:id/status', tc.updateTask);
 router.delete('/:id', tc.deleteTask);
 
 // Task Comments

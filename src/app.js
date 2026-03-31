@@ -27,6 +27,7 @@ const assignmentRoutes = require('./routes/assignmentRoutes');
 const timesheetRoutes = require('./routes/timesheetRoutes');
 const leadsRoutes = require('./routes/leadsRoutes');
 const commonRoutes = require('./routes/commonRoutes');
+const dc = require('./controllers/dashboardController');
 const ac = require('./controllers/assignmentController');
 const { generalLimiter } = require('./middleware/rateLimiter');
 
@@ -91,6 +92,12 @@ app.use(`${v1}/leads`, leadsRoutes);
 app.use(v1, commonRoutes);
 
 // New requested routes
+app.get('/api/updates', authenticateToken, dc.getDashboardUpdates);
+app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/tasks', taskRoutes);
+app.use('/api/hrms', hrmsRoutes);
+app.use('/api/masters', mastersRoutes);
+app.use('/api', mastersExtraRoutes);
 app.use('/api/forms', incorporationRoutes);
 app.use('/api/company', mcaRoutes);
 app.use('/api/checklists', checklistRoutes);

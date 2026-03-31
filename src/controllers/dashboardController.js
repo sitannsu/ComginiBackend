@@ -185,16 +185,99 @@ const getDashboardTasks = async (req, res) => {
 
 const getDashboardUpdates = async (req, res) => {
     try {
+        const limit = parseInt(req.query.limit) || 5;
         const [rows] = await pool.query(
             `SELECT title, DATE(created_at) as date
              FROM tasks
              ORDER BY created_at DESC
-             LIMIT 10`
+             LIMIT ?`,
+            [limit]
         );
         res.json({ success: true, message: 'Success', data: rows });
     } catch (error) {
         console.error('Dashboard updates error:', error);
         res.status(500).json({ success: false, message: 'Failed to fetch dashboard updates' });
+    }
+};
+
+const getDashboardStats = async (req, res) => {
+    try {
+        const [[{ total }]] = await pool.query('SELECT COUNT(*) as total FROM tasks');
+        const [[{ completed }]] = await pool.query('SELECT COUNT(*) as completed FROM tasks WHERE status = "completed"');
+        const [[{ pending }]] = await pool.query('SELECT COUNT(*) as pending FROM tasks WHERE status = "todo" OR status = "in_progress"');
+        const [[{ overdue }]] = await pool.query('SELECT COUNT(*) as overdue FROM tasks WHERE due_date < CURDATE() AND status != "completed"');
+
+        const [activities] = await pool.query(
+            `SELECT title as activity, created_at as timestamp FROM tasks ORDER BY created_at DESC LIMIT 5`
+        );
+
+        res.json({
+            success: true,
+            data: {
+                tasks: { total, completed, pending, overdue },
+                recent_activities: activities,
+                kpis: {
+                    efficiency: completed > 0 ? Math.round((completed / total) * 100) : 0,
+                    avg_task_time: '4.5h'
+                }
+            }
+        });
+    } catch (error) {
+        console.error('Dashboard stats error:', error);
+        res.status(500).json({ success: false, message: 'Failed to fetch dashboard stats' });
+    }
+};
+
+const getDashboardPayments = async (req, res) => {
+    try {
+        const [[{ total_receivable }]] = await pool.query(`SELECT COALESCE(SUM(total_amount), 0) as total FROM invoices WHERE payment_status = 'pending'`);
+        const [[{ total_received }]] = await pool.query(`SELECT COALESCE(SUM(total_amount), 0) as total FROM invoices WHERE payment_status = 'paid'`);
+        const [recent_payments] = await pool.query(
+            `SELECT invoice_number, total_amount, payment_status, payment_date FROM invoices ORDER BY payment_date DESC LIMIT 5`
+        );
+        res.json({
+            success: true,
+            data: {
+                summary: { total_receivable, total_received },
+                recent_payments: recent_payments
+            }
+        });
+    } catch (error) {
+        console.error('Dashboard payments error:', error);
+        res.status(500).json({ success: false, message: 'Failed to fetch dashboard payments' });
+    }
+};
+
+const getDashboardIncomeExpense = async (req, res) => {
+    try {
+        const [income] = await pool.query(
+            `SELECT DATE_FORMAT(payment_date, '%b') as month, SUM(total_amount) as amount FROM invoices WHERE payment_status = 'paid' AND payment_date >= DATE_SUB(NOW(), INTERVAL 6 MONTH) GROUP BY month ORDER BY MIN(payment_date)`
+        );
+        const [expense] = await pool.query(
+            `SELECT DATE_FORMAT(expense_date, '%b') as month, SUM(amount) as amount FROM expenses WHERE expense_date >= DATE_SUB(NOW(), INTERVAL 6 MONTH) GROUP BY month ORDER BY MIN(expense_date)`
+        );
+        res.json({
+            success: true,
+            data: { income, expense }
+        });
+    } catch (error) {
+        console.error('Dashboard income-expense error:', error);
+        res.status(500).json({ success: false, message: 'Failed to fetch income-expense' });
+    }
+};
+
+const getDashboardFinanceBreakdown = async (req, res) => {
+    try {
+        const [breakdown] = await pool.query(
+            `SELECT category as label, SUM(amount) as value FROM expenses GROUP BY category`
+        );
+        res.json({
+            success: true,
+            data: breakdown
+        });
+    } catch (error) {
+        console.error('Dashboard finance breakdown error:', error);
+        res.status(500).json({ success: false, message: 'Failed to fetch finance breakdown' });
     }
 };
 
@@ -250,5 +333,6 @@ module.exports = {
     getWidgets, updateWidgets,
     getNotes, createNote, updateNote, deleteNote,
     getFeed, createPost, deletePost,
-    getDashboardSummary, getDashboardTasks, getDashboardUpdates, getFinanceOverview, getExpenseBreakdown
+    getDashboardSummary, getDashboardTasks, getDashboardUpdates, getFinanceOverview, getExpenseBreakdown,
+    getDashboardStats, getDashboardPayments, getDashboardIncomeExpense, getDashboardFinanceBreakdown
 };
