@@ -29,6 +29,7 @@ const leadsRoutes = require('./routes/leadsRoutes');
 const commonRoutes = require('./routes/commonRoutes');
 const dc = require('./controllers/dashboardController');
 const ac = require('./controllers/assignmentController');
+const { authenticateToken } = require('./middleware/auth');
 const { generalLimiter } = require('./middleware/rateLimiter');
 
 const app = express();
@@ -104,7 +105,7 @@ app.use('/api/checklists', checklistRoutes);
 app.use('/api/assignments', assignmentRoutes);
 app.use('/api/timesheets', timesheetRoutes);
 
-const { authenticateToken } = require('./middleware/auth');
+
 
 // Dropdown APIs
 app.get('/api/users', authenticateToken, ac.getUsers);
