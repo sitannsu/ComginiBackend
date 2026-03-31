@@ -51,6 +51,10 @@ async function sendPasswordResetEmail(email, resetToken, userName) {
     };
 
     try {
+        if (!transporter) {
+            console.warn('Email not configured — password reset email not sent');
+            return false;
+        }
         await transporter.sendMail(mailOptions);
         console.log(`Password reset email sent to ${email}`);
         return true;

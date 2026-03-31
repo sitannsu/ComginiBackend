@@ -106,7 +106,17 @@ const createCSRCalculation = async (req, res) => {
         if (error.code === 'ER_NO_SUCH_TABLE') {
             return res.status(503).json({ success: false, message: 'Database table missing. Run secretarial_module_tables.sql' });
         }
-        res.status(500).json({ success: false, message: 'Failed to save CSR calculation' });
+        if (error.code === 'ER_NO_REFERENCED_ROW_2' || error.errno === 1452) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid client_id: no matching row in clients. Use an existing clients.id from your database.'
+            });
+        }
+        res.status(500).json({
+            success: false,
+            message: 'Failed to save CSR calculation',
+            ...(process.env.NODE_ENV === 'development' && { detail: error.message })
+        });
     }
 };
 
@@ -251,7 +261,18 @@ const bulkUpdateCompliances = async (req, res) => {
         res.json({ success: true, message: `${company_ids.length} filing rows created`, data: { updated: company_ids.length } });
     } catch (error) {
         console.error('bulkUpdateCompliances:', error);
-        res.status(500).json({ success: false, message: 'Failed bulk compliance update' });
+        if (error.code === 'ER_NO_REFERENCED_ROW_2' || error.errno === 1452) {
+            return res.status(400).json({
+                success: false,
+                message:
+                    'Invalid company_id: one or more IDs are not in companies. Use existing companies.id values only.'
+            });
+        }
+        res.status(500).json({
+            success: false,
+            message: 'Failed bulk compliance update',
+            ...(process.env.NODE_ENV === 'development' && { detail: error.message })
+        });
     }
 };
 

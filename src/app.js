@@ -93,6 +93,9 @@ app.use(`${v1}/timesheets`, timesheetRoutes);
 app.use(`${v1}/leads`, leadsRoutes);
 app.use(v1, commonRoutes);
 
+// Dashboard updates — frontend calls /api/v1/updates (alias for /api/v1/dashboard/updates)
+app.get(`${v1}/updates`, authenticateToken, dc.getDashboardUpdates);
+
 // New requested routes
 app.get('/api/updates', authenticateToken, dc.getDashboardUpdates);
 app.use('/api/dashboard', dashboardRoutes);
