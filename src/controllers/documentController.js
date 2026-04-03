@@ -98,6 +98,64 @@ const getDocumentRequests = async (req, res) => {
     }
 };
 
+/** GET /api/v1/documents/requested — search, page, limit */
+const listRequestedDocuments = async (req, res) => {
+    try {
+        const { search = '', page = 1, limit = 10 } = req.query;
+        const offset = (parseInt(page, 10) - 1) * parseInt(limit, 10);
+        const where = ['1=1'];
+        const params = [];
+        const term = String(search).trim();
+        if (term) {
+            const t = `%${term}%`;
+            where.push(
+                '(dr.document_title LIKE ? OR cl.name LIKE ? OR cl.company_name LIKE ? OR cl.cin LIKE ?)'
+            );
+            params.push(t, t, t, t);
+        }
+        const whereSql = where.join(' AND ');
+        const [rows] = await pool.query(
+            `SELECT dr.id, dr.document_title, dr.status, dr.created_at, dr.due_date,
+                    cl.name AS client_name, cl.company_name, cl.cin AS client_cin,
+                    u.first_name AS req_first, u.last_name AS req_last,
+                    doc.file_name AS uploaded_file_name
+             FROM document_requests dr
+             JOIN clients cl ON dr.client_id = cl.id
+             JOIN users u ON dr.requested_by = u.id
+             LEFT JOIN documents doc ON dr.document_id = doc.id
+             WHERE ${whereSql}
+             ORDER BY dr.created_at DESC
+             LIMIT ? OFFSET ?`,
+            [...params, parseInt(limit, 10), offset]
+        );
+        const [[{ total }]] = await pool.query(
+            `SELECT COUNT(*) AS total FROM document_requests dr
+             JOIN clients cl ON dr.client_id = cl.id
+             WHERE ${whereSql}`,
+            params
+        );
+        const data = rows.map((r) => ({
+            id: r.id,
+            requestedBy: [r.req_first, r.req_last].filter(Boolean).join(' ').trim() || null,
+            requestedOn: r.created_at,
+            companyName: r.company_name || r.client_name || null,
+            financialYear: null,
+            fileName: r.uploaded_file_name || r.document_title,
+            status: r.status,
+            dueDate: r.due_date
+        }));
+        res.json({
+            success: true,
+            message: ' ',
+            data,
+            pagination: { page: parseInt(page, 10), limit: parseInt(limit, 10), total }
+        });
+    } catch (error) {
+        console.error('listRequestedDocuments:', error);
+        res.status(500).json({ success: false, message: 'Failed to fetch requested documents', data: [] });
+    }
+};
+
 const createDocumentRequest = async (req, res) => {
     try {
         const { document_title, description, client_id, due_date } = req.body;
@@ -147,5 +205,6 @@ const uploadViaMagicLink = async (req, res) => {
 
 module.exports = {
     getDocuments, createDocument, updateDocument, deleteDocument,
-    getDocumentRequests, createDocumentRequest, uploadViaMagicLink
+    getDocumentRequests, createDocumentRequest, uploadViaMagicLink,
+    listRequestedDocuments
 };

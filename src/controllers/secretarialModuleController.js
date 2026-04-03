@@ -37,13 +37,14 @@ const listSearchReports = async (req, res) => {
 const createSearchReport = async (req, res) => {
     try {
         const body = req.body;
-        const entityType = body.entity_type === 'llp' ? 'llp' : 'company';
+        const entityType =
+            body.entity_type === 'llp' || body.type === 'llp' ? 'llp' : 'company';
         const [result] = await pool.query(
             'INSERT INTO secretarial_search_reports (entity_type, payload) VALUES (?, ?)',
             [entityType, JSON.stringify(body)]
         );
         const [rows] = await pool.query('SELECT * FROM secretarial_search_reports WHERE id = ?', [result.insertId]);
-        res.status(201).json({ success: true, data: rows[0] });
+        res.status(201).json({ success: true, message: '', data: rows[0] });
     } catch (error) {
         console.error('createSearchReport:', error);
         if (error.code === 'ER_NO_SUCH_TABLE') {

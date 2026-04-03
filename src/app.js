@@ -30,6 +30,13 @@ const assignmentRoutes = require('./routes/assignmentRoutes');
 const timesheetRoutes = require('./routes/timesheetRoutes');
 const leadsRoutes = require('./routes/leadsRoutes');
 const commonRoutes = require('./routes/commonRoutes');
+const dir3KycRoutes = require('./routes/dir3KycRoutes');
+const shareholdersRoutes = require('./routes/shareholdersRoutes');
+const formsRoutes = require('./routes/formsRoutes');
+const dir2Routes = require('./routes/dir2Routes');
+const credentialsV1Routes = require('./routes/credentialsV1Routes');
+const annualFilingDirectorsRoutes = require('./routes/annualFilingDirectorsRoutes');
+const secretarialModuleController = require('./controllers/secretarialModuleController');
 const dc = require('./controllers/dashboardController');
 const ac = require('./controllers/assignmentController');
 
@@ -83,6 +90,8 @@ app.use(`${v1}/business`, businessRoutes);
 app.use(`${v1}/finance`, financeRoutes);
 app.use(`${v1}/support`, supportRoutes);
 app.use(`${v1}/secretarial`, secretarialRoutes);
+app.use(`${v1}/dir3-kyc`, dir3KycRoutes);
+app.use(`${v1}/shareholders`, shareholdersRoutes);
 app.use(`${v1}/mca`, mcaRoutes);
 app.use(`${v1}/efiling`, efilingRoutes);
 app.use(v1, entityRoutes);
@@ -92,6 +101,11 @@ app.use(`${v1}/assignments`, assignmentRoutes);
 app.use(`${v1}/timesheets`, timesheetRoutes);
 app.use(`${v1}/leads`, leadsRoutes);
 app.use(v1, commonRoutes);
+app.use(`${v1}/forms`, formsRoutes);
+app.use(`${v1}/dir2`, dir2Routes);
+app.post(`${v1}/search-report`, authenticateToken, secretarialModuleController.createSearchReport);
+app.use(v1, credentialsV1Routes);
+app.use(v1, annualFilingDirectorsRoutes);
 
 // Dashboard updates — frontend calls /api/v1/updates (alias for /api/v1/dashboard/updates)
 app.get(`${v1}/updates`, authenticateToken, dc.getDashboardUpdates);

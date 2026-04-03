@@ -1,12 +1,15 @@
 const mysql = require('mysql2/promise');
 require('dotenv').config();
 
+const dbPassword =
+  process.env.DB_PASSWORD !== undefined ? process.env.DB_PASSWORD : process.env.MYSQL_PASSWORD;
+
 const pool = mysql.createPool({
   host: process.env.DB_HOST || 'localhost',
   port: process.env.DB_PORT || 3306,
   database: process.env.DB_NAME || 'comgini_db',
   user: process.env.DB_USER || 'root',
-  password: process.env.DB_PASSWORD,
+  password: dbPassword === '' ? '' : dbPassword,
   waitForConnections: true,
   connectionLimit: 20,
   queueLimit: 0,

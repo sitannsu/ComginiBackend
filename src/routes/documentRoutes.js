@@ -8,6 +8,7 @@ router.post('/upload/:token', dc.uploadViaMagicLink);
 
 router.use(authenticateToken);
 
+router.get('/requested', dc.listRequestedDocuments);
 router.get('/', dc.getDocuments);
 router.post('/', dc.createDocument);
 router.put('/:id', dc.updateDocument);
