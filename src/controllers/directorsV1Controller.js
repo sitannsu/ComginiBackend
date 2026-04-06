@@ -1,5 +1,21 @@
 const pool = require('../config/database');
 
+/** Accepts YYYY-MM-DD or d/m/yyyy; returns YYYY-MM-DD or null */
+function normalizeAppointmentDate(val) {
+    if (val === undefined || val === null || val === '') return null;
+    if (typeof val !== 'string') return val;
+    const s = val.trim();
+    if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0, 10);
+    const m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if (m) {
+        const d = m[1].padStart(2, '0');
+        const mo = m[2].padStart(2, '0');
+        const y = m[3];
+        return `${y}-${mo}-${d}`;
+    }
+    return null;
+}
+
 function mapDirectorRow(r) {
     return {
         id: r.id,
@@ -77,7 +93,15 @@ const createDirector = async (req, res) => {
         if (!name || !String(name).trim()) {
             return res.status(400).json({ success: false, message: 'name is required' });
         }
-        const ad = appointmentDate ?? appointment_date ?? null;
+        const rawAd = appointmentDate ?? appointment_date ?? null;
+        const ad = normalizeAppointmentDate(rawAd);
+        if (rawAd != null && String(rawAd).trim() !== '' && ad === null) {
+            return res.status(400).json({
+                success: false,
+                message:
+                    'appointmentDate must be YYYY-MM-DD or dd/mm/yyyy (e.g. 30/01/2002)'
+            });
+        }
         let tenureVal = tenure_years;
         if (tenureVal === undefined || tenureVal === null) {
             tenureVal = tenure !== undefined && tenure !== null && tenure !== '' ? parseInt(tenure, 10) : 0;
@@ -87,7 +111,7 @@ const createDirector = async (req, res) => {
         const [result] = await pool.query(
             `INSERT INTO directors (company_id, din, name, designation, appointment_date, cessation_date, tenure_years)
              VALUES (?, ?, ?, ?, ?, NULL, ?)`,
-            [company_id_num, din || null, String(name).trim(), designation || null, ad || null, tenureVal]
+            [company_id_num, din || null, String(name).trim(), designation || null, ad, tenureVal]
         );
         const [rows] = await pool.query(
             `SELECT d.*, c.name AS company_name FROM directors d
@@ -102,9 +126,19 @@ const createDirector = async (req, res) => {
     } catch (error) {
         console.error('createDirector:', error);
         if (error.code === 'ER_NO_REFERENCED_ROW_2' || error.errno === 1452) {
-            return res.status(400).json({ success: false, message: 'Invalid companyId' });
+            return res.status(400).json({ success: false, message: 'Invalid companyId — use an existing companies.id' });
         }
-        res.status(500).json({ success: false, message: 'Failed to create director' });
+        if (error.code === 'ER_TRUNCATED_WRONG_VALUE' || error.errno === 1366) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid appointmentDate or field value — use YYYY-MM-DD or dd/mm/yyyy'
+            });
+        }
+        res.status(500).json({
+            success: false,
+            message: 'Failed to create director',
+            ...(process.env.NODE_ENV === 'development' && { detail: error.message })
+        });
     }
 };
 

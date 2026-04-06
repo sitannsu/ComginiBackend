@@ -1,8 +1,8 @@
 {
 	"info": {
-		"_postman_id": "c7e8f9a0-1111-4222-b333-444455556666",
-		"name": "Comgini Secretarial + Dashboard v1",
-		"description": "Bearer auth, dashboard under /api/v1, GET /api/v1/updates alias, and full Secretarial Practice API.\n\n**503 on new endpoints?** Run on MySQL: `src/database/deploy_secretarial_migrations.sql` (see file header for mysql command).\n\nVariables: set `baseUrl` (e.g. http://localhost:3000 or your EC2 URL). Run **Login** first — it saves `accessToken` into collection var `token`.",
+		"_postman_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+		"name": "Comgini API v1 — Complete",
+		"description": "Single consolidated collection for **Comgini Backend** (`/api/v1`).\n\n**Server DB (503 errors):** On the machine where MySQL runs, apply migrations once:\n`mysql -u USER -p DATABASE < src/database/deploy_secretarial_migrations.sql`\nAlso ensure `secretarial_module_tables.sql` was applied if you use secretarial search/CSR tables.\n\n**Includes:** Auth & profile · Dashboard & updates · Secretarial · DIR-3 / MCA V2/V3 · Shareholders · Debenture holders · Forms, DIR-2 · LLP & Company MCA · Bulk WhatsApp/Gmail · Annual filing · Documents · Directors.\n\n**Setup:** Set `baseUrl`. Run **0. Auth → Login** to save `token`. **POST director** accepts `appointmentDate` as `YYYY-MM-DD` or `dd/mm/yyyy`. **POST bulk/whatsapp/upload** requires a real file in form field `file`.",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"auth": {
