@@ -5,6 +5,11 @@ const { authenticateToken } = require('../middleware/auth');
 
 router.use(authenticateToken);
 
+// Income vs expenses (spec: chart, summary, monthly)
+router.get('/chart', fc.getIncomeExpenseChart);
+router.get('/summary', fc.getIncomeExpenseSummary);
+router.get('/monthly', fc.getIncomeExpenseMonthly);
+
 // Invoices
 router.get('/invoices', fc.getInvoices);
 router.get('/invoices/:id', fc.getInvoiceById);

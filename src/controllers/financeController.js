@@ -168,6 +168,111 @@ const deleteExpense = async (req, res) => {
     }
 };
 
+const MONTH_LABELS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+const yearFromQuery = (req) => parseInt(req.query.year || new Date().getFullYear(), 10);
+
+/** GET /finance/chart — spec: monthly income vs expense for a year */
+const getIncomeExpenseChart = async (req, res) => {
+    try {
+        const year = yearFromQuery(req);
+        const [incomeRows] = await pool.query(
+            `SELECT MONTH(payment_date) AS m, COALESCE(SUM(total_amount), 0) AS amt
+             FROM invoices
+             WHERE payment_status = 'paid' AND payment_date IS NOT NULL AND YEAR(payment_date) = ?
+             GROUP BY MONTH(payment_date)`,
+            [year]
+        );
+        const [expenseRows] = await pool.query(
+            `SELECT MONTH(expense_date) AS m, COALESCE(SUM(amount), 0) AS amt
+             FROM expenses WHERE YEAR(expense_date) = ?
+             GROUP BY MONTH(expense_date)`,
+            [year]
+        );
+        const incomeByM = {};
+        incomeRows.forEach((r) => { incomeByM[r.m] = parseFloat(r.amt); });
+        const expenseByM = {};
+        expenseRows.forEach((r) => { expenseByM[r.m] = parseFloat(r.amt); });
+        const data = MONTH_LABELS.map((month, i) => ({
+            month,
+            income: incomeByM[i + 1] || 0,
+            expense: expenseByM[i + 1] || 0
+        }));
+        res.json({ success: true, data });
+    } catch (error) {
+        console.error('Finance chart error:', error);
+        res.status(500).json({ success: false, message: 'Failed to fetch chart data' });
+    }
+};
+
+/** GET /finance/summary — spec: totals for selected year */
+const getIncomeExpenseSummary = async (req, res) => {
+    try {
+        const year = yearFromQuery(req);
+        const [[{ total_income }]] = await pool.query(
+            `SELECT COALESCE(SUM(total_amount), 0) AS total_income FROM invoices
+             WHERE payment_status = 'paid' AND payment_date IS NOT NULL AND YEAR(payment_date) = ?`,
+            [year]
+        );
+        const [[{ total_expenses }]] = await pool.query(
+            `SELECT COALESCE(SUM(amount), 0) AS total_expenses FROM expenses
+             WHERE YEAR(expense_date) = ?`,
+            [year]
+        );
+        const ti = parseFloat(total_income);
+        const te = parseFloat(total_expenses);
+        res.json({
+            success: true,
+            data: {
+                total_income: ti,
+                total_expenses: te,
+                net_profit: ti - te
+            }
+        });
+    } catch (error) {
+        console.error('Finance summary error:', error);
+        res.status(500).json({ success: false, message: 'Failed to fetch summary' });
+    }
+};
+
+/** GET /finance/monthly — spec: table rows with profit */
+const getIncomeExpenseMonthly = async (req, res) => {
+    try {
+        const year = yearFromQuery(req);
+        const [incomeRows] = await pool.query(
+            `SELECT MONTH(payment_date) AS m, COALESCE(SUM(total_amount), 0) AS amt
+             FROM invoices
+             WHERE payment_status = 'paid' AND payment_date IS NOT NULL AND YEAR(payment_date) = ?
+             GROUP BY MONTH(payment_date)`,
+            [year]
+        );
+        const [expenseRows] = await pool.query(
+            `SELECT MONTH(expense_date) AS m, COALESCE(SUM(amount), 0) AS amt
+             FROM expenses WHERE YEAR(expense_date) = ?
+             GROUP BY MONTH(expense_date)`,
+            [year]
+        );
+        const incomeByM = {};
+        incomeRows.forEach((r) => { incomeByM[r.m] = parseFloat(r.amt); });
+        const expenseByM = {};
+        expenseRows.forEach((r) => { expenseByM[r.m] = parseFloat(r.amt); });
+        const data = MONTH_LABELS.map((month, i) => {
+            const income = incomeByM[i + 1] || 0;
+            const expenses = expenseByM[i + 1] || 0;
+            return {
+                month,
+                income,
+                expenses,
+                profit: income - expenses
+            };
+        });
+        res.json({ success: true, data });
+    } catch (error) {
+        console.error('Finance monthly error:', error);
+        res.status(500).json({ success: false, message: 'Failed to fetch monthly data' });
+    }
+};
+
 // ---- PROFIT/LOSS SUMMARY ----
 
 const getProfitLoss = async (req, res) => {
@@ -220,5 +325,6 @@ const getProfitLoss = async (req, res) => {
 module.exports = {
     getInvoices, getInvoiceById, createInvoice, updateInvoice, deleteInvoice,
     getExpenses, createExpense, updateExpense, deleteExpense,
+    getIncomeExpenseChart, getIncomeExpenseSummary, getIncomeExpenseMonthly,
     getProfitLoss
 };

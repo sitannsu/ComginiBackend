@@ -5,8 +5,10 @@ const { authenticateToken } = require('../middleware/auth');
 
 router.use(authenticateToken);
 
+router.get('/summary', timesheetController.getTimesheetSummary);
+router.put('/:id', timesheetController.updateTimesheet);
+router.delete('/:id', timesheetController.deleteTimesheet);
 router.get('/', timesheetController.getTimesheets);
 router.post('/', timesheetController.createTimesheet);
-router.get('/summary', timesheetController.getTimesheetSummary);
 
 module.exports = router;
