@@ -1,9 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const fc = require('../controllers/financeController');
+const paymentsRoutes = require('./paymentsRoutes');
 const { authenticateToken } = require('../middleware/auth');
 
 router.use(authenticateToken);
+
+// Payments received (Finance module UI) — same as /api/v1/payments
+router.use('/payments', paymentsRoutes);
 
 // Income vs expenses (spec: chart, summary, monthly)
 router.get('/chart', fc.getIncomeExpenseChart);

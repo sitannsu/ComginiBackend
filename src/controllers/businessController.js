@@ -85,17 +85,40 @@ const getExpiringItems = async (req, res) => {
 
 const getInsurance = async (req, res) => {
     try {
-        const { page = 1, limit = 20 } = req.query;
+        const { page = 1, limit = 20, search, company_id } = req.query;
         const offset = (parseInt(page, 10) - 1) * parseInt(limit, 10);
+        let where = '1=1';
+        const params = [];
+        if (company_id) {
+            where += ' AND bi.company_id = ?';
+            params.push(company_id);
+        }
+        if (search) {
+            where += ' AND (c.name LIKE ? OR bi.insurance_company LIKE ? OR bi.policy_number LIKE ? OR bi.broker_name LIKE ?)';
+            const s = `%${search}%`;
+            params.push(s, s, s, s);
+        }
         const [rows] = await pool.query(
             `SELECT bi.*, c.name as company_name
              FROM business_insurance bi
              LEFT JOIN companies c ON bi.company_id = c.id
+             WHERE ${where}
              ORDER BY bi.created_at DESC
              LIMIT ? OFFSET ?`,
-            [parseInt(limit, 10), offset]
+            [...params, parseInt(limit, 10), offset]
         );
-        res.json({ success: true, message: 'Success', data: rows });
+        const [[{ total }]] = await pool.query(
+            `SELECT COUNT(*) AS total FROM business_insurance bi
+             LEFT JOIN companies c ON bi.company_id = c.id
+             WHERE ${where}`,
+            params
+        );
+        res.json({
+            success: true,
+            message: 'Success',
+            data: rows,
+            pagination: { page: parseInt(page, 10), limit: parseInt(limit, 10), total }
+        });
     } catch (error) {
         console.error('Get insurance error:', error);
         res.status(500).json({ success: false, message: 'Failed to fetch insurance' });
@@ -166,17 +189,40 @@ const uploadInsurance = async (req, res) => {
 
 const getContracts = async (req, res) => {
     try {
-        const { page = 1, limit = 20 } = req.query;
+        const { page = 1, limit = 20, search, company_id } = req.query;
         const offset = (parseInt(page, 10) - 1) * parseInt(limit, 10);
+        let where = '1=1';
+        const params = [];
+        if (company_id) {
+            where += ' AND bc.company_id = ?';
+            params.push(company_id);
+        }
+        if (search) {
+            where += ' AND (c.name LIKE ? OR bc.contract_name LIKE ? OR bc.name_of_party LIKE ? OR bc.category LIKE ?)';
+            const s = `%${search}%`;
+            params.push(s, s, s, s);
+        }
         const [rows] = await pool.query(
             `SELECT bc.*, c.name as company_name
              FROM business_contracts bc
              LEFT JOIN companies c ON bc.company_id = c.id
+             WHERE ${where}
              ORDER BY bc.created_at DESC
              LIMIT ? OFFSET ?`,
-            [parseInt(limit, 10), offset]
+            [...params, parseInt(limit, 10), offset]
         );
-        res.json({ success: true, message: 'Success', data: rows });
+        const [[{ total }]] = await pool.query(
+            `SELECT COUNT(*) AS total FROM business_contracts bc
+             LEFT JOIN companies c ON bc.company_id = c.id
+             WHERE ${where}`,
+            params
+        );
+        res.json({
+            success: true,
+            message: 'Success',
+            data: rows,
+            pagination: { page: parseInt(page, 10), limit: parseInt(limit, 10), total }
+        });
     } catch (error) {
         console.error('Get contracts error:', error);
         res.status(500).json({ success: false, message: 'Failed to fetch contracts' });

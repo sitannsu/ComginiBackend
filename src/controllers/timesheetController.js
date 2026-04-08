@@ -125,23 +125,37 @@ const createTimesheet = async (req, res) => {
         const b = req.body;
         const member_id = parseId(b.member_id ?? b.memberId);
         const client_id = parseId(b.client_id ?? b.clientId);
-        const assignment_id = b.assignment_id != null || b.assignmentId != null
-            ? parseId(b.assignment_id ?? b.assignmentId)
-            : null;
+        let assignment_id = null;
+        const rawAssign = b.assignment_id ?? b.assignmentId;
+        if (rawAssign !== undefined && rawAssign !== null && String(rawAssign).trim() !== '') {
+            const aid = parseId(rawAssign);
+            if (!Number.isNaN(aid) && aid > 0) {
+                const [[a]] = await pool.query('SELECT id FROM checklist_assignments WHERE id = ? LIMIT 1', [aid]);
+                assignment_id = a ? aid : null;
+            }
+        }
         const task = b.task;
         const start_date = b.start_date ?? b.startDate;
         const start_time = b.start_time ?? b.startTime;
         const end_date = b.end_date ?? b.endDate;
-        const end_time = b.end_time ?? b.endTime;
+        const end_time = b.end_time ?? b.endTime ?? b.startTime ?? b.start_time;
         const note = b.note;
 
-        if (!member_id || !client_id || !task || !start_date || !start_time) {
+        if (!member_id || Number.isNaN(member_id) || !client_id || Number.isNaN(client_id) || !task || !start_date || !start_time) {
             return res.status(400).json({
                 success: false,
                 message: 'Missing required fields: member_id, client_id, task, start_date, start_time'
             });
         }
 
+        const [[u]] = await pool.query('SELECT id FROM users WHERE id = ? LIMIT 1', [member_id]);
+        if (!u) {
+            return res.status(400).json({ success: false, message: 'Invalid member_id (user not found)' });
+        }
+        const [[c]] = await pool.query('SELECT id FROM clients WHERE id = ? LIMIT 1', [client_id]);
+        if (!c) {
+            return res.status(400).json({ success: false, message: 'Invalid client_id (client not found)' });
+        }
         const [result] = await pool.query(
             `INSERT INTO timesheets (member_id, client_id, assignment_id, task, start_date, start_time, end_date, end_time, note)
              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -165,6 +179,12 @@ const createTimesheet = async (req, res) => {
         });
     } catch (error) {
         console.error('Create timesheet error:', error);
+        if (error.code === 'ER_NO_REFERENCED_ROW_2' || error.errno === 1452) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid reference: check member_id, client_id, and assignment_id exist in the database.'
+            });
+        }
         res.status(500).json({ success: false, message: 'Failed to create timesheet' });
     }
 };

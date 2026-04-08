@@ -2,15 +2,26 @@ const pool = require('../config/database');
 
 const toNull = (v) => (v === undefined ? null : v);
 
-const LEAD_STATUSES = ['Discussion', 'Under Review', 'In Progress', 'Pending Client', 'Pending DSC'];
+/** Dropdown + Kanban columns (UI-aligned) */
+const LEAD_STATUSES = [
+    'To do',
+    'Under Review',
+    'In progress',
+    'Pending with the Client',
+    'Pending for DSC'
+];
 
 const KANBAN_BUCKETS = ['todo', 'under_review', 'in_progress', 'pending_client', 'pending_dsc'];
 const STATUS_TO_BUCKET = {
     Discussion: 'todo',
+    'To do': 'todo',
     'Under Review': 'under_review',
     'In Progress': 'in_progress',
+    'In progress': 'in_progress',
     'Pending Client': 'pending_client',
-    'Pending DSC': 'pending_dsc'
+    'Pending with the Client': 'pending_client',
+    'Pending DSC': 'pending_dsc',
+    'Pending for DSC': 'pending_dsc'
 };
 
 const mapLeadForSpec = (row) => ({
