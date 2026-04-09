@@ -4,7 +4,7 @@
 CREATE TABLE IF NOT EXISTS time_cards (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
-    mode VARCHAR(10) NOT NULL DEFAULT 'WFO',
+    `mode` VARCHAR(10) NOT NULL DEFAULT 'WFO',
     in_date DATE NOT NULL,
     in_time TIME NOT NULL,
     out_date DATE NULL,

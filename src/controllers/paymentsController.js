@@ -2,6 +2,17 @@ const pool = require('../config/database');
 
 const toNull = (v) => (v === undefined ? null : v);
 
+const sendDbError = (res, error, fallbackMessage) => {
+    if (error.code === 'ER_NO_SUCH_TABLE' || error.errno === 1146) {
+        return res.status(503).json({
+            success: false,
+            message: `${fallbackMessage} Database table missing. Run: mysql ... < src/database/deploy_modules_leads_finance_hr.sql`,
+            code: 'MIGRATION_REQUIRED'
+        });
+    }
+    return res.status(500).json({ success: false, message: fallbackMessage });
+};
+
 const mapRow = (row) => ({
     id: `pay_${row.id}`,
     invoice_id: row.invoice_number || (row.invoice_id != null ? String(row.invoice_id) : null),
@@ -86,7 +97,7 @@ const getPayments = async (req, res) => {
         });
     } catch (error) {
         console.error('Get payments error:', error);
-        res.status(500).json({ success: false, message: 'Failed to fetch payments' });
+        sendDbError(res, error, 'Failed to fetch payments');
     }
 };
 
@@ -119,7 +130,7 @@ const createPayment = async (req, res) => {
         });
     } catch (error) {
         console.error('Create payment error:', error);
-        res.status(500).json({ success: false, message: 'Failed to create payment' });
+        sendDbError(res, error, 'Failed to create payment');
     }
 };
 
@@ -173,7 +184,7 @@ const updatePayment = async (req, res) => {
         res.json({ success: true, message: 'Payment updated successfully', data: mapRow(rows[0]) });
     } catch (error) {
         console.error('Update payment error:', error);
-        res.status(500).json({ success: false, message: 'Failed to update payment' });
+        sendDbError(res, error, 'Failed to update payment');
     }
 };
 
@@ -185,7 +196,7 @@ const deletePayment = async (req, res) => {
         res.json({ success: true, message: 'Payment deleted successfully' });
     } catch (error) {
         console.error('Delete payment error:', error);
-        res.status(500).json({ success: false, message: 'Failed to delete payment' });
+        sendDbError(res, error, 'Failed to delete payment');
     }
 };
 

@@ -5,15 +5,28 @@ const toNull = (v) => (v === undefined ? null : v);
 const parseUserId = (raw) => {
     if (raw == null || raw === '') return null;
     const s = String(raw);
-    if (s.startsWith('user_')) return parseInt(s.slice(5), 10);
-    return parseInt(s, 10);
+    const n = s.startsWith('user_') ? parseInt(s.slice(5), 10) : parseInt(s, 10);
+    return Number.isNaN(n) || n < 1 ? null : n;
 };
 
 const parseTcId = (raw) => {
     if (raw == null || raw === '') return null;
     const s = String(raw);
-    if (s.startsWith('tc_')) return parseInt(s.slice(3), 10);
-    return parseInt(s, 10);
+    const n = s.startsWith('tc_') ? parseInt(s.slice(3), 10) : parseInt(s, 10);
+    return Number.isNaN(n) || n < 1 ? null : n;
+};
+
+const migrationHint = 'If tables are missing, run: mysql ... < src/database/deploy_modules_leads_finance_hr.sql';
+
+const sendDbError = (res, error, fallbackMessage) => {
+    if (error.code === 'ER_NO_SUCH_TABLE' || error.errno === 1146) {
+        return res.status(503).json({
+            success: false,
+            message: `${fallbackMessage} Database table missing. ${migrationHint}`,
+            code: 'MIGRATION_REQUIRED'
+        });
+    }
+    return res.status(500).json({ success: false, message: fallbackMessage });
 };
 
 const fmtTime = (t) => {
@@ -114,7 +127,7 @@ const getTimeCards = async (req, res) => {
         });
     } catch (error) {
         console.error('Get time cards error:', error);
-        res.status(500).json({ success: false, message: 'Failed to fetch time cards' });
+        sendDbError(res, error, 'Failed to fetch time cards');
     }
 };
 
@@ -134,7 +147,7 @@ const createTimeCard = async (req, res) => {
         }
 
         const [result] = await pool.query(
-            `INSERT INTO time_cards (user_id, mode, in_date, in_time, out_date, out_time, note)
+            `INSERT INTO time_cards (user_id, \`mode\`, in_date, in_time, out_date, out_time, note)
              VALUES (?, ?, ?, ?, ?, ?, ?)`,
             [user_id, mode, in_date, in_time, out_date || null, out_time || null, toNull(note)]
         );
@@ -145,7 +158,7 @@ const createTimeCard = async (req, res) => {
         });
     } catch (error) {
         console.error('Create time card error:', error);
-        res.status(500).json({ success: false, message: 'Failed to create time card' });
+        sendDbError(res, error, 'Failed to create time card');
     }
 };
 
@@ -157,7 +170,7 @@ const updateTimeCard = async (req, res) => {
         const fields = [];
         const values = [];
         if (b.mode !== undefined) {
-            fields.push('mode=?');
+            fields.push('`mode`=?');
             values.push(b.mode === 'WFH' ? 'WFH' : 'WFO');
         }
         if (b.in_date !== undefined) {
@@ -198,7 +211,7 @@ const updateTimeCard = async (req, res) => {
         res.json({ success: true, message: 'Time card updated', data: mapListRow(rows[0]) });
     } catch (error) {
         console.error('Update time card error:', error);
-        res.status(500).json({ success: false, message: 'Failed to update time card' });
+        sendDbError(res, error, 'Failed to update time card');
     }
 };
 
@@ -211,7 +224,7 @@ const deleteTimeCard = async (req, res) => {
         res.json({ success: true, message: 'Time card deleted successfully' });
     } catch (error) {
         console.error('Delete time card error:', error);
-        res.status(500).json({ success: false, message: 'Failed to delete time card' });
+        sendDbError(res, error, 'Failed to delete time card');
     }
 };
 
@@ -239,8 +252,9 @@ const getSummary = async (req, res) => {
         const [rows] = await pool.query(
             `SELECT
                 tc.user_id,
-                TRIM(CONCAT(COALESCE(u.first_name, ''), ' ', COALESCE(u.last_name, ''))) AS member_name,
-                u.first_name, u.last_name,
+                MAX(TRIM(CONCAT(COALESCE(u.first_name, ''), ' ', COALESCE(u.last_name, '')))) AS member_name,
+                MAX(u.first_name) AS first_name,
+                MAX(u.last_name) AS last_name,
                 SUM(TIMESTAMPDIFF(
                     MINUTE,
                     CONCAT(tc.in_date, ' ', tc.in_time),
@@ -249,8 +263,8 @@ const getSummary = async (req, res) => {
              FROM time_cards tc
              JOIN users u ON tc.user_id = u.id
              WHERE ${where}
-             GROUP BY tc.user_id, u.first_name, u.last_name
-             ORDER BY u.first_name, u.last_name`,
+             GROUP BY tc.user_id
+             ORDER BY tc.user_id`,
             params
         );
 
@@ -265,7 +279,7 @@ const getSummary = async (req, res) => {
         res.json({ success: true, data });
     } catch (error) {
         console.error('Time cards summary error:', error);
-        res.status(500).json({ success: false, message: 'Failed to fetch summary' });
+        sendDbError(res, error, 'Failed to fetch summary');
     }
 };
 
@@ -314,7 +328,7 @@ const getSummaryDetails = async (req, res) => {
         res.json({ success: true, data });
     } catch (error) {
         console.error('Summary details error:', error);
-        res.status(500).json({ success: false, message: 'Failed to fetch summary details' });
+        sendDbError(res, error, 'Failed to fetch summary details');
     }
 };
 
@@ -338,15 +352,16 @@ const getUserReport = async (req, res) => {
         const [rows] = await pool.query(
             `SELECT
                 tc.user_id,
-                TRIM(CONCAT(COALESCE(u.first_name, ''), ' ', COALESCE(u.last_name, ''))) AS member_name,
-                u.first_name, u.last_name,
+                MAX(TRIM(CONCAT(COALESCE(u.first_name, ''), ' ', COALESCE(u.last_name, '')))) AS member_name,
+                MAX(u.first_name) AS first_name,
+                MAX(u.last_name) AS last_name,
                 COUNT(DISTINCT tc.in_date) AS present_days,
-                SUM(CASE WHEN tc.mode = 'WFO' THEN 1 ELSE 0 END) AS wfo_rows,
-                SUM(CASE WHEN tc.mode = 'WFH' THEN 1 ELSE 0 END) AS wfh_rows
+                SUM(CASE WHEN tc.\`mode\` = 'WFO' THEN 1 ELSE 0 END) AS wfo_rows,
+                SUM(CASE WHEN tc.\`mode\` = 'WFH' THEN 1 ELSE 0 END) AS wfh_rows
              FROM time_cards tc
              JOIN users u ON tc.user_id = u.id
              WHERE ${where}
-             GROUP BY tc.user_id, u.first_name, u.last_name`,
+             GROUP BY tc.user_id`,
             params
         );
 
@@ -370,7 +385,7 @@ const getUserReport = async (req, res) => {
         res.json({ success: true, data });
     } catch (error) {
         console.error('User report error:', error);
-        res.status(500).json({ success: false, message: 'Failed to fetch user report' });
+        sendDbError(res, error, 'Failed to fetch user report');
     }
 };
 
@@ -422,7 +437,7 @@ const getUserSummaryDetails = async (req, res) => {
         res.json({ success: true, data });
     } catch (error) {
         console.error('User summary details error:', error);
-        res.status(500).json({ success: false, message: 'Failed to fetch user summary details' });
+        sendDbError(res, error, 'Failed to fetch user summary details');
     }
 };
 
@@ -434,13 +449,14 @@ const getMembersLogged = async (req, res) => {
         const [rows] = await pool.query(
             `SELECT tc.user_id,
                     MIN(tc.in_time) AS first_in,
-                    TRIM(CONCAT(COALESCE(u.first_name, ''), ' ', COALESCE(u.last_name, ''))) AS member_name,
-                    u.first_name, u.last_name
+                    MAX(TRIM(CONCAT(COALESCE(u.first_name, ''), ' ', COALESCE(u.last_name, '')))) AS member_name,
+                    MAX(u.first_name) AS first_name,
+                    MAX(u.last_name) AS last_name
              FROM time_cards tc
              JOIN users u ON tc.user_id = u.id
              WHERE tc.in_date = ?
-             GROUP BY tc.user_id, u.first_name, u.last_name
-             ORDER BY first_in`,
+             GROUP BY tc.user_id
+             ORDER BY MIN(tc.in_time)`,
             [day]
         );
 
@@ -452,7 +468,7 @@ const getMembersLogged = async (req, res) => {
         res.json({ success: true, data });
     } catch (error) {
         console.error('Members logged error:', error);
-        res.status(500).json({ success: false, message: 'Failed to fetch members logged' });
+        sendDbError(res, error, 'Failed to fetch members logged');
     }
 };
 
@@ -460,6 +476,9 @@ const logIn = async (req, res) => {
     try {
         const user_id = parseUserId(req.body.member_id ?? req.body.memberId);
         if (!user_id) return res.status(400).json({ success: false, message: 'member_id is required' });
+
+        const [[u]] = await pool.query('SELECT id FROM users WHERE id = ? LIMIT 1', [user_id]);
+        if (!u) return res.status(400).json({ success: false, message: 'Invalid member_id (user not found)' });
 
         const [open] = await pool.query(
             'SELECT id FROM time_cards WHERE user_id = ? AND out_time IS NULL ORDER BY id DESC LIMIT 1',
@@ -471,7 +490,7 @@ const logIn = async (req, res) => {
 
         const mode = req.body.mode === 'WFH' ? 'WFH' : 'WFO';
         const [result] = await pool.query(
-            `INSERT INTO time_cards (user_id, mode, in_date, in_time, out_date, out_time)
+            `INSERT INTO time_cards (user_id, \`mode\`, in_date, in_time, out_date, out_time)
              VALUES (?, ?, CURDATE(), CURTIME(), NULL, NULL)`,
             [user_id, mode]
         );
@@ -482,7 +501,10 @@ const logIn = async (req, res) => {
         });
     } catch (error) {
         console.error('Log in error:', error);
-        res.status(500).json({ success: false, message: 'Failed to log in' });
+        if (error.code === 'ER_NO_REFERENCED_ROW_2' || error.errno === 1452) {
+            return res.status(400).json({ success: false, message: 'Invalid member_id (user not found)' });
+        }
+        sendDbError(res, error, 'Failed to log in');
     }
 };
 
@@ -507,7 +529,7 @@ const logOut = async (req, res) => {
         res.json({ success: true, message: 'Logged out', data: { id: `tc_${open[0].id}` } });
     } catch (error) {
         console.error('Log out error:', error);
-        res.status(500).json({ success: false, message: 'Failed to log out' });
+        sendDbError(res, error, 'Failed to log out');
     }
 };
 

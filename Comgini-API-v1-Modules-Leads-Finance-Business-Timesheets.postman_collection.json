@@ -1,0 +1,398 @@
+{
+	"info": {
+		"_postman_id": "c4d5e6f7-a8b9-0123-cdef-456789abcdef",
+		"name": "Comgini API v1 — Leads, Finance, Business, Timesheets, Time cards",
+		"description": "Standalone collection: **Leads**, **Finance** (income vs expenses + payments), **Business Manager** (insurance, contracts, registrations, agreements alias), **Timesheets**, **Time cards**, plus **dropdowns**.\n\n**Auth:** Run **Login** first; token is saved to `{{token}}`.\n\n**DB:** Apply `payments_module.sql` and `time_cards_module.sql` if those tables are missing.\n\n**Base URL:** set `baseUrl` (e.g. `http://localhost:3000` or your server).",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"auth": {
+		"type": "bearer",
+		"bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }]
+	},
+	"item": [
+		{
+			"name": "0. Auth",
+			"item": [
+				{
+					"name": "Login (saves token)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const j = pm.response.json();",
+									"const t = j.data && (j.data.accessToken || j.data.token);",
+									"if (t) { pm.collectionVariables.set('token', t); pm.test('Token saved', () => pm.expect(t).to.be.a('string')); }",
+									"else { pm.test('Login returned token', () => pm.expect(t).to.be.ok); }"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": { "type": "noauth" },
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"YourPassword123!\"\n}"
+						},
+						"url": "{{baseUrl}}/api/v1/auth/login"
+					}
+				},
+				{
+					"name": "GET profile",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{baseUrl}}/api/v1/auth/profile"
+					}
+				}
+			]
+		},
+		{
+			"name": "1. Dropdowns",
+			"item": [
+				{
+					"name": "GET users",
+					"request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/v1/users" }
+				},
+				{
+					"name": "GET clients",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": { "raw": "{{baseUrl}}/api/v1/clients?page=1&limit=100&search=", "query": [{ "key": "page", "value": "1" }, { "key": "limit", "value": "100" }, { "key": "search", "value": "" }] }
+					}
+				},
+				{
+					"name": "GET assignments",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": { "raw": "{{baseUrl}}/api/v1/assignments?page=1&limit=50&status=", "query": [{ "key": "page", "value": "1" }, { "key": "limit", "value": "50" }, { "key": "status", "value": "" }] }
+					}
+				},
+				{
+					"name": "GET companies (assignments)",
+					"request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/v1/assignments/companies" }
+				},
+				{
+					"name": "GET leads sources",
+					"request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/v1/leads/sources" }
+				},
+				{
+					"name": "GET leads status list",
+					"request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/v1/leads/status" }
+				}
+			]
+		},
+		{
+			"name": "2. Leads",
+			"item": [
+				{
+					"name": "GET leads list",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": { "raw": "{{baseUrl}}/api/v1/leads?page=1&limit=10&owner=&source=&status=&search=", "query": [{ "key": "page", "value": "1" }, { "key": "limit", "value": "10" }, { "key": "owner", "value": "" }, { "key": "source", "value": "" }, { "key": "status", "value": "" }, { "key": "search", "value": "" }] }
+					}
+				},
+				{
+					"name": "GET leads kanban",
+					"request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/v1/leads/kanban" }
+				},
+				{
+					"name": "POST lead",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Website Development\",\n  \"company_name\": \"ABC Pvt Ltd\",\n  \"status\": \"To do\",\n  \"owner_id\": 1,\n  \"source\": \"Online\",\n  \"address\": \"Bangalore\",\n  \"city\": \"Bangalore\",\n  \"state\": \"Karnataka\",\n  \"pincode\": \"560001\",\n  \"country\": \"India\",\n  \"phone\": \"9876543210\",\n  \"website\": \"https://abc.com\",\n  \"gstin\": \"29ABCDE1234F1Z5\"\n}"
+						},
+						"url": "{{baseUrl}}/api/v1/leads"
+					}
+				},
+				{
+					"name": "PUT lead",
+					"request": {
+						"method": "PUT",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": { "mode": "raw", "raw": "{\n  \"title\": \"Updated Title\",\n  \"status\": \"Under Review\"\n}" },
+						"url": "{{baseUrl}}/api/v1/leads/{{leadId}}"
+					}
+				},
+				{
+					"name": "DELETE lead",
+					"request": { "method": "DELETE", "header": [], "url": "{{baseUrl}}/api/v1/leads/{{leadId}}" }
+				}
+			]
+		},
+		{
+			"name": "3. Finance — Income vs expenses & payments",
+			"item": [
+				{
+					"name": "GET finance chart",
+					"request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/v1/finance/chart?year=2026" }
+				},
+				{
+					"name": "GET finance summary",
+					"request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/v1/finance/summary?year=2026" }
+				},
+				{
+					"name": "GET finance monthly",
+					"request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/v1/finance/monthly?year=2026" }
+				},
+				{
+					"name": "GET payments",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": { "raw": "{{baseUrl}}/api/v1/payments?page=1&limit=10&assignment_id=&payment_method=&month=02&year=2026&search=", "query": [{ "key": "page", "value": "1" }, { "key": "limit", "value": "10" }, { "key": "assignment_id", "value": "" }, { "key": "payment_method", "value": "" }, { "key": "month", "value": "02" }, { "key": "year", "value": "2026" }, { "key": "search", "value": "" }] }
+					}
+				},
+				{
+					"name": "GET finance payments (alias)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": { "raw": "{{baseUrl}}/api/v1/finance/payments?page=1&limit=10", "query": [{ "key": "page", "value": "1" }, { "key": "limit", "value": "10" }] }
+					}
+				},
+				{
+					"name": "POST payment",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"invoice_id\": \"INV001\",\n  \"payment_date\": \"2026-02-10\",\n  \"payment_method\": \"UPI\",\n  \"note\": \"Advance\",\n  \"amount\": 5000\n}"
+						},
+						"url": "{{baseUrl}}/api/v1/payments"
+					}
+				},
+				{
+					"name": "PUT payment",
+					"request": {
+						"method": "PUT",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": { "mode": "raw", "raw": "{\n  \"amount\": 6000\n}" },
+						"url": "{{baseUrl}}/api/v1/payments/{{payId}}"
+					}
+				},
+				{
+					"name": "DELETE payment",
+					"request": { "method": "DELETE", "header": [], "url": "{{baseUrl}}/api/v1/payments/{{payId}}" }
+				}
+			]
+		},
+		{
+			"name": "4. Business Manager",
+			"item": [
+				{
+					"name": "GET insurance",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": { "raw": "{{baseUrl}}/api/v1/business/insurance?page=1&limit=20&search=&company_id=", "query": [{ "key": "page", "value": "1" }, { "key": "limit", "value": "20" }, { "key": "search", "value": "" }, { "key": "company_id", "value": "" }] }
+					}
+				},
+				{
+					"name": "POST insurance",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"company_id\": 1,\n  \"insurance_company\": \"ICICI\",\n  \"broker_name\": \"Broker A\",\n  \"policy_type\": \"Fire\",\n  \"policy_number\": \"POL-001\",\n  \"sum_insured\": 1000000,\n  \"policy_commencement_date\": \"2026-01-01\",\n  \"renewal_date\": \"2027-01-01\",\n  \"start_from\": \"2026-01-01\",\n  \"expiry_date\": \"2027-01-01\",\n  \"amount_paid\": 50000,\n  \"mode_of_payment\": \"UPI\",\n  \"asset_insured\": \"Office\",\n  \"payment_date\": \"2026-01-01\",\n  \"key_terms\": \"\",\n  \"alert_user\": \"admin@example.com\",\n  \"alert_before\": \"30\",\n  \"remarks\": \"\"\n}"
+						},
+						"url": "{{baseUrl}}/api/v1/business/insurance"
+					}
+				},
+				{
+					"name": "GET insurance (business-manager alias)",
+					"request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/v1/business-manager/insurance?page=1&limit=20" }
+				},
+				{
+					"name": "GET contracts",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": { "raw": "{{baseUrl}}/api/v1/business/contracts?page=1&limit=20&search=&company_id=", "query": [{ "key": "page", "value": "1" }, { "key": "limit", "value": "20" }, { "key": "search", "value": "" }, { "key": "company_id", "value": "" }] }
+					}
+				},
+				{
+					"name": "POST contract",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"company_id\": 1,\n  \"category\": \"Service\",\n  \"contract_name\": \"MSA 2026\",\n  \"contract_value\": 500000,\n  \"contract_period\": \"12 months\",\n  \"name_of_party\": \"Client Ltd\",\n  \"date_of_execution\": \"2026-01-15\",\n  \"start_from\": \"2026-02-01\",\n  \"expiry_date\": \"2027-01-31\",\n  \"key_terms\": \"\",\n  \"alert_user\": \"admin@example.com\",\n  \"alert_before\": \"30 days\",\n  \"remarks\": \"\"\n}"
+						},
+						"url": "{{baseUrl}}/api/v1/business/contracts"
+					}
+				},
+				{
+					"name": "GET agreements (alias)",
+					"request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/v1/agreements?page=1&limit=20" }
+				},
+				{
+					"name": "POST agreement (alias)",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"company_id\": 1,\n  \"category\": \"Service\",\n  \"contract_name\": \"Agreement title\",\n  \"contract_value\": 100000,\n  \"contract_period\": \"1 year\",\n  \"name_of_party\": \"Party name\",\n  \"date_of_execution\": \"2026-04-01\",\n  \"start_from\": \"2026-04-01\",\n  \"expiry_date\": \"2027-03-31\",\n  \"key_terms\": \"\",\n  \"alert_user\": \"\",\n  \"alert_before\": \"1 month\",\n  \"remarks\": \"\"\n}"
+						},
+						"url": "{{baseUrl}}/api/v1/agreements"
+					}
+				},
+				{
+					"name": "GET registrations / licences",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": { "raw": "{{baseUrl}}/api/v1/business/registrations?page=1&limit=20&company_id=&status=", "query": [{ "key": "page", "value": "1" }, { "key": "limit", "value": "20" }, { "key": "company_id", "value": "" }, { "key": "status", "value": "" }] }
+					}
+				}
+			]
+		},
+		{
+			"name": "5. Timesheets",
+			"item": [
+				{
+					"name": "GET timesheets (v1)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": { "raw": "{{baseUrl}}/api/v1/timesheets?page=1&limit=10&member_id=&client_id=&assignment_id=&from=2026-01-01&to=2026-12-31&search=", "query": [{ "key": "page", "value": "1" }, { "key": "limit", "value": "10" }, { "key": "member_id", "value": "" }, { "key": "client_id", "value": "" }, { "key": "assignment_id", "value": "" }, { "key": "from", "value": "2026-01-01" }, { "key": "to", "value": "2026-12-31" }, { "key": "search", "value": "" }] }
+					}
+				},
+				{
+					"name": "GET timesheets (legacy /api/timesheets)",
+					"request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/timesheets?page=1&limit=10" }
+				},
+				{
+					"name": "POST create timesheet",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"memberId\": \"1\",\n  \"clientId\": \"1\",\n  \"task\": \"Tax Audit Documentation\",\n  \"startDate\": \"2026-02-23\",\n  \"startTime\": \"10:00\",\n  \"endDate\": \"2026-02-23\",\n  \"endTime\": \"18:00\",\n  \"note\": \"Optional note\"\n}"
+						},
+						"url": "{{baseUrl}}/api/v1/timesheets"
+					}
+				},
+				{
+					"name": "GET timesheet summary",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": { "raw": "{{baseUrl}}/api/v1/timesheets/summary?member_id=&from=2026-03-01&to=2026-04-30", "query": [{ "key": "member_id", "value": "" }, { "key": "from", "value": "2026-03-01" }, { "key": "to", "value": "2026-04-30" }] }
+					}
+				},
+				{
+					"name": "PUT timesheet",
+					"request": {
+						"method": "PUT",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": { "mode": "raw", "raw": "{\n  \"task\": \"Updated task title\"\n}" },
+						"url": "{{baseUrl}}/api/v1/timesheets/{{tsId}}"
+					}
+				},
+				{
+					"name": "DELETE timesheet",
+					"request": { "method": "DELETE", "header": [], "url": "{{baseUrl}}/api/v1/timesheets/{{tsId}}" }
+				}
+			]
+		},
+		{
+			"name": "6. Time cards (HRMS)",
+			"item": [
+				{
+					"name": "GET time-cards list",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": { "raw": "{{baseUrl}}/api/v1/time-cards?page=1&limit=10&member_id=&from=&to=&month=4&year=2026&search=", "query": [{ "key": "page", "value": "1" }, { "key": "limit", "value": "10" }, { "key": "member_id", "value": "" }, { "key": "from", "value": "" }, { "key": "to", "value": "" }, { "key": "month", "value": "4" }, { "key": "year", "value": "2026" }, { "key": "search", "value": "" }] }
+					}
+				},
+				{
+					"name": "POST time-card (manual)",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"member_id\": \"user_1\",\n  \"mode\": \"WFO\",\n  \"in_date\": \"2026-04-07\",\n  \"in_time\": \"09:00\",\n  \"out_date\": \"2026-04-07\",\n  \"out_time\": \"18:00\",\n  \"note\": \"Manual entry\"\n}"
+						},
+						"url": "{{baseUrl}}/api/v1/time-cards"
+					}
+				},
+				{
+					"name": "GET time-cards summary",
+					"request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/v1/time-cards/summary?from=2026-04-01&to=2026-04-30" }
+				},
+				{
+					"name": "GET summary-details",
+					"request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/v1/time-cards/summary-details?member_id=1&from=2026-04-01&to=2026-04-30" }
+				},
+				{
+					"name": "GET user-report",
+					"request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/v1/time-cards/user-report?from=2026-04-01&to=2026-04-30" }
+				},
+				{
+					"name": "GET user-summary-details",
+					"request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/v1/time-cards/user-summary-details?member_id=1&from=2026-04-01&to=2026-04-30" }
+				},
+				{
+					"name": "GET members-logged",
+					"request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/v1/time-cards/members-logged?from=2026-04-08" }
+				},
+				{
+					"name": "POST log-in",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": { "mode": "raw", "raw": "{\n  \"member_id\": \"user_1\"\n}" },
+						"url": "{{baseUrl}}/api/v1/time-cards/log-in"
+					}
+				},
+				{
+					"name": "POST log-out",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": { "mode": "raw", "raw": "{\n  \"member_id\": \"user_1\"\n}" },
+						"url": "{{baseUrl}}/api/v1/time-cards/log-out"
+					}
+				},
+				{
+					"name": "PUT time-card",
+					"request": {
+						"method": "PUT",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": { "mode": "raw", "raw": "{\n  \"note\": \"Updated note\"\n}" },
+						"url": "{{baseUrl}}/api/v1/time-cards/{{tcId}}"
+					}
+				},
+				{
+					"name": "DELETE time-card",
+					"request": { "method": "DELETE", "header": [], "url": "{{baseUrl}}/api/v1/time-cards/{{tcId}}" }
+				}
+			]
+		}
+	],
+	"variable": [
+		{ "key": "baseUrl", "value": "http://localhost:3000" },
+		{ "key": "token", "value": "" },
+		{ "key": "leadId", "value": "1" },
+		{ "key": "payId", "value": "pay_1" },
+		{ "key": "tsId", "value": "ts_1" },
+		{ "key": "tcId", "value": "tc_1" }
+	]
+}
