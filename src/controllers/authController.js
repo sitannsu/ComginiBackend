@@ -385,7 +385,8 @@ const getProfile = async (req, res) => {
         const userId = req.user.id;
 
         const [userRows] = await pool.query(
-            `SELECT id, email, first_name, last_name, phone, is_verified, created_at, last_login
+            `SELECT id, email, first_name, last_name, phone, avatar, gender, company_name, gst_number,
+              is_verified, created_at, last_login
        FROM users WHERE id = ?`,
             [userId]
         );
@@ -407,6 +408,10 @@ const getProfile = async (req, res) => {
                 firstName: user.first_name,
                 lastName: user.last_name,
                 phone: user.phone,
+                avatar: user.avatar || 'blue',
+                gender: user.gender,
+                companyName: user.company_name,
+                gstNumber: user.gst_number,
                 isVerified: user.is_verified,
                 createdAt: user.created_at,
                 lastLogin: user.last_login
@@ -421,11 +426,44 @@ const getProfile = async (req, res) => {
     }
 };
 
+/**
+ * GET /api/auth/me — frontend contract (string id)
+ */
+const getMe = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const [userRows] = await pool.query(
+            `SELECT id, email, first_name, last_name, phone, avatar, gender FROM users WHERE id = ?`,
+            [userId]
+        );
+        if (userRows.length === 0) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+        const user = userRows[0];
+        res.json({
+            success: true,
+            data: {
+                id: `user_${user.id}`,
+                firstName: user.first_name,
+                lastName: user.last_name,
+                email: user.email,
+                phone: user.phone,
+                avatar: user.avatar || 'blue',
+                gender: user.gender
+            }
+        });
+    } catch (error) {
+        console.error('Get me error:', error);
+        res.status(500).json({ success: false, message: 'An error occurred while fetching user' });
+    }
+};
+
 module.exports = {
     login,
     register,
     forgotPassword,
     resetPassword,
     logout,
-    getProfile
+    getProfile,
+    getMe
 };

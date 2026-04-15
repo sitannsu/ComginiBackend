@@ -153,7 +153,14 @@ const getDashboardSummary = async (req, res) => {
         res.json({
             success: true,
             data: {
-                totalClients, totalTasks, overdueTasks, upcomingEvents, pendingFilings, openTickets,
+                totalClients,
+                activeTasks: totalTasks,
+                pendingCompliance: pendingFilings,
+                totalTasks,
+                overdueTasks,
+                upcomingEvents,
+                pendingFilings,
+                openTickets,
                 pendingApproval: pendingFilings,
                 pendingReview: totalTasks,
                 inRequest: upcomingEvents,

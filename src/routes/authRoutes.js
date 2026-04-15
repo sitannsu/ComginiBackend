@@ -55,4 +55,11 @@ router.post('/logout', authenticateToken, authController.logout);
  */
 router.get('/profile', authenticateToken, authController.getProfile);
 
+/**
+ * @route   GET /api/auth/me
+ * @desc    Logged-in user (frontend contract)
+ * @access  Private
+ */
+router.get('/me', authenticateToken, authController.getMe);
+
 module.exports = router;

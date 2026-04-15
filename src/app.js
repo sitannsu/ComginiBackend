@@ -42,6 +42,11 @@ const annualFilingDirectorsRoutes = require('./routes/annualFilingDirectorsRoute
 const secretarialModuleController = require('./controllers/secretarialModuleController');
 const dc = require('./controllers/dashboardController');
 const ac = require('./controllers/assignmentController');
+const userProfileRoutes = require('./routes/userProfileRoutes');
+const plansRoutes = require('./routes/plansRoutes');
+const subscriptionRoutes = require('./routes/subscriptionRoutes');
+const paymentCommerceRoutes = require('./routes/paymentCommerceRoutes');
+const aiChatRoutes = require('./routes/aiChatRoutes');
 
 const app = express();
 
@@ -80,6 +85,7 @@ app.get('/health', (req, res) => {
 // API routes
 const v1 = `/api/${process.env.API_VERSION || 'v1'}`;
 app.use(`${v1}/auth`, authRoutes);
+app.use('/api/auth', authRoutes);
 app.use(`${v1}/dashboard`, dashboardRoutes);
 app.use(`${v1}/clients`, clientRoutes);
 app.use(`${v1}/masters`, mastersRoutes);
@@ -113,6 +119,17 @@ app.use(`${v1}/dir2`, dir2Routes);
 app.post(`${v1}/search-report`, authenticateToken, secretarialModuleController.createSearchReport);
 app.use(v1, credentialsV1Routes);
 app.use(v1, annualFilingDirectorsRoutes);
+
+app.use(`${v1}/user`, userProfileRoutes);
+app.use('/api/user', userProfileRoutes);
+app.use(`${v1}/plans`, plansRoutes);
+app.use('/api/plans', plansRoutes);
+app.use(`${v1}/subscription`, subscriptionRoutes);
+app.use('/api/subscription', subscriptionRoutes);
+app.use(`${v1}/payment`, paymentCommerceRoutes);
+app.use('/api/payment', paymentCommerceRoutes);
+app.use(`${v1}/ai`, aiChatRoutes);
+app.use('/api/ai', aiChatRoutes);
 
 // Dashboard updates — frontend calls /api/v1/updates (alias for /api/v1/dashboard/updates)
 app.get(`${v1}/updates`, authenticateToken, dc.getDashboardUpdates);
