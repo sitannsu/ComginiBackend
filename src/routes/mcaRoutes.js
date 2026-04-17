@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const mc = require('../controllers/mcaController');
 const mv2v3 = require('../controllers/mcaV2V3ModuleController');
+const cc = require('../controllers/contractController');
 const { authenticateToken } = require('../middleware/auth');
 
 router.use(authenticateToken);
@@ -19,6 +20,11 @@ v3.post('/accounts', mv2v3.createMcaV3Account);
 
 router.use('/v2', v2);
 router.use('/v3', v3);
+
+// Contract endpoints
+router.get('/users', mv2v3.listMcaUsersContract);
+router.post('/send-otp', cc.sendMcaOtp);
+router.post('/verify-otp', cc.verifyMcaOtp);
 
 router.get('/downloads', mc.getDownloads);
 router.post('/downloads', mc.requestDownload);

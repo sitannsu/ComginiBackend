@@ -47,6 +47,7 @@ const plansRoutes = require('./routes/plansRoutes');
 const subscriptionRoutes = require('./routes/subscriptionRoutes');
 const paymentCommerceRoutes = require('./routes/paymentCommerceRoutes');
 const aiChatRoutes = require('./routes/aiChatRoutes');
+const contractRoutes = require('./routes/contractRoutes');
 
 const app = express();
 
@@ -143,6 +144,9 @@ app.use('/api/masters', mastersRoutes);
 app.use('/api', mastersExtraRoutes);
 app.use('/api/forms', incorporationRoutes);
 app.use('/api/company', mcaRoutes);
+app.use('/api/mca', mcaRoutes);
+app.use('/api/dir2', dir2Routes);
+app.use('/api', contractRoutes);
 app.use('/api/checklists', checklistRoutes);
 app.use('/api/assignments', assignmentRoutes);
 app.use('/api/timesheets', timesheetRoutes);

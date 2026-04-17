@@ -4,7 +4,10 @@ const pool = require('../config/database');
 
 const getEmployees = async (req, res) => {
     try {
-        const { status, department, search } = req.query;
+        const { status, department, search, page = 1, limit = 10 } = req.query;
+        const pageNum = parseInt(page, 10);
+        const limitNum = parseInt(limit, 10);
+        const offset = (pageNum - 1) * limitNum;
         let where = '1=1';
         const params = [];
         if (status) { where += ' AND e.status = ?'; params.push(status); }
@@ -14,10 +17,18 @@ const getEmployees = async (req, res) => {
         const [rows] = await pool.query(
             `SELECT e.*, u.first_name, u.last_name, u.email, u.phone
              FROM employees e LEFT JOIN users u ON e.user_id = u.id
-             WHERE ${where} ORDER BY u.first_name`,
-            params
+             WHERE ${where} ORDER BY u.first_name
+             LIMIT ? OFFSET ?`,
+            [...params, limitNum, offset]
         );
-        res.json({ success: true, data: rows });
+        res.json({
+            success: true,
+            data: rows.map((r) => ({
+                id: `emp_${r.id}`,
+                name: [r.first_name, r.last_name].filter(Boolean).join(' ').trim(),
+                jobTitle: r.designation || null
+            }))
+        });
     } catch (error) {
         console.error('Get employees error:', error);
         res.status(500).json({ success: false, message: 'Failed to fetch employees' });
@@ -256,6 +267,38 @@ const createSalary = async (req, res) => {
     }
 };
 
+const saveSalary = async (req, res) => {
+    try {
+        const { employees = [], year } = req.body;
+        if (!Array.isArray(employees) || employees.length === 0 || !year) {
+            return res.status(400).json({ success: false, message: 'employees and year are required' });
+        }
+
+        for (const emp of employees) {
+            const employeeId = String(emp.employeeId || '').replace('emp_', '');
+            if (!employeeId) continue;
+            await pool.query(
+                `INSERT INTO salary_details
+                (employee_id, salary_in_hand, overtime_per_day, leave_deduction, paid_leave, financial_year)
+                VALUES (?, ?, ?, ?, ?, ?)`,
+                [
+                    parseInt(employeeId, 10),
+                    emp.salaryPerMonth || 0,
+                    emp.overtimePerDay || 0,
+                    emp.leaveDeduction || 0,
+                    emp.paidLeave || 0,
+                    year
+                ]
+            );
+        }
+
+        res.json({ success: true, message: 'Salary saved' });
+    } catch (error) {
+        console.error('saveSalary error:', error);
+        res.status(500).json({ success: false, message: 'Failed to save salary' });
+    }
+};
+
 const deleteSalary = async (req, res) => {
     try {
         await pool.query('DELETE FROM salary_details WHERE id = ?', [req.params.id]);
@@ -270,5 +313,5 @@ module.exports = {
     getEmployees, getEmployeeById, createEmployee, updateEmployee,
     getAttendance, clockIn, clockOut,
     getLeaves, applyLeave, approveLeave,
-    getSalary, createSalary, deleteSalary
+    getSalary, createSalary, saveSalary, deleteSalary
 };

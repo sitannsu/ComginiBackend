@@ -9,6 +9,7 @@ function mapDir2Row(row) {
         companyName: row.company_name || null,
         appointeeName: row.appointee_name || row.name || null,
         dateOfAppointment,
+        date: dateOfAppointment,
         dir2Status: row.dir2_status || null
     };
 }
@@ -73,16 +74,17 @@ const listDir2 = async (req, res) => {
  */
 const createDir2 = async (req, res) => {
     try {
-        const { din, name, pan, company_id, companyId, company_name, companyName, date_of_appointment, dateOfAppointment } =
+        const { din, name, appointeeName, pan, company_id, companyId, company_name, companyName, date, date_of_appointment, dateOfAppointment } =
             req.body;
 
-        if (!name || !String(name).trim()) {
-            return res.status(400).json({ success: false, message: 'name is required' });
+        const finalName = name || appointeeName;
+        if (!finalName || !String(finalName).trim()) {
+            return res.status(400).json({ success: false, message: 'name/appointeeName is required' });
         }
 
         const cid = company_id ?? companyId ?? null;
         const cname = company_name ?? companyName ?? null;
-        const doa = date_of_appointment ?? dateOfAppointment ?? null;
+        const doa = date ?? date_of_appointment ?? dateOfAppointment ?? null;
         const dinVal = din != null && String(din).trim() ? String(din).trim() : null;
         const panVal = pan != null && String(pan).trim() ? String(pan).trim().toUpperCase() : null;
 
@@ -93,12 +95,12 @@ const createDir2 = async (req, res) => {
             [
                 cid,
                 cname ? String(cname).trim() : null,
-                String(name).trim(),
+                String(finalName).trim(),
                 dinVal,
                 panVal,
-                String(name).trim(),
+                String(finalName).trim(),
                 doa || null,
-                JSON.stringify({ submitted: { din: dinVal, name: String(name).trim(), pan: panVal } })
+                JSON.stringify({ submitted: { din: dinVal, name: String(finalName).trim(), pan: panVal } })
             ]
         );
         const [rows] = await pool.query('SELECT * FROM secretarial_dir2 WHERE id = ?', [result.insertId]);

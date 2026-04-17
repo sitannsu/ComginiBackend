@@ -207,6 +207,28 @@ const listMcaUsers = async (req, res) => {
     }
 };
 
+const listMcaUsersContract = async (req, res) => {
+    try {
+        const [rows] = await pool.query(
+            `SELECT id, email, updated_at
+             FROM users WHERE is_active = 1 ORDER BY updated_at DESC LIMIT 500`
+        );
+        res.json({
+            success: true,
+            data: rows.map((u) => ({
+                id: `mca_${u.id}`,
+                email: u.email,
+                lastUpdated: u.updated_at
+                    ? new Date(u.updated_at).toISOString().slice(0, 10)
+                    : null
+            }))
+        });
+    } catch (error) {
+        console.error('listMcaUsersContract:', error);
+        res.status(500).json({ success: false, message: 'Failed to list MCA users' });
+    }
+};
+
 // ---- MCA V3 ----
 
 const createMcaV3Account = async (req, res) => {
@@ -299,5 +321,6 @@ module.exports = {
     getSrnDetails,
     exportTransactionsCsv,
     listMcaUsers,
+    listMcaUsersContract,
     createMcaV3Account
 };

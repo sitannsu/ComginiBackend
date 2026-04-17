@@ -27,6 +27,7 @@ router.put('/leave/:id/action', hc.approveLeave);
 // Salary
 router.get('/salary', hc.getSalary);
 router.post('/salary', hc.createSalary);
+router.post('/salary/save', hc.saveSalary);
 router.delete('/salary/:id', hc.deleteSalary);
 
 module.exports = router;
